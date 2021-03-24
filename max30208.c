@@ -44,52 +44,33 @@
 
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
-#define CHECK(expr, ret)            \
-  do {                              \
-    if (!(expr)) {                  \
-      NRF_LOG_INFO("%s", #expr);    \
-      return (ret);                 \
-    }                               \
-  } while (0)
-
-#define MAX_CHECK(expr)             \
-  do {                              \
-    max30208_status_t ret = (expr); \
-    if (MAX30208_OK != ret) {       \
-      NRF_LOG_INFO("%s", #expr);    \
-      return (ret);                 \
-    }                               \
-  } while (0)
-
 /* Public variables --------------------------------------------------- */
 /* Private variables -------------------------------------------------- */
 /* Private function prototypes ---------------------------------------- */
-static max30208_status_t m_max30208_read_reg(max30208_t *me, uint8_t reg, uint8_t *p_data, uint32_t len);
-static max30208_status_t m_max30208_write_reg(max30208_t *me, uint8_t reg, uint8_t *p_data, uint32_t len);
-static max30208_status_t m_max30208_interrupt_enable(max30208_t *me, uint8_t reg, uint8_t intr, bool enable);
+static base_status_t m_max30208_read_reg(max30208_t *me, uint8_t reg, uint8_t *p_data, uint32_t len);
+static base_status_t m_max30208_write_reg(max30208_t *me, uint8_t reg, uint8_t *p_data, uint32_t len);
+static base_status_t m_max30208_interrupt_enable(max30208_t *me, uint8_t reg, uint8_t intr, bool enable);
 float m_max30208_calculate_temp(uint8_t msb, uint8_t lsb);
 
 /* Function definitions ----------------------------------------------- */
-max30208_status_t max30208_init(max30208_t *me)
+base_status_t max30208_init(max30208_t *me)
 {
   uint8_t identifier = 0x00;
 
   if ((me == NULL) || (me->i2c_read == NULL) || (me->i2c_write == NULL))
-    return MAX30208_ERR_PARAM;
-
-  me->device_address = MAX30208_I2C_ADDR;
+    return BS_ERROR;
 
   MAX_CHECK(m_max30208_read_reg(me, MAX30208_REG_PART_IDENTIFIER, identifier, 1));
 
   if (MAX30208_PART_IDENTIFIER != identifier)
   {
-    return MAX30208_ERR_I2C;
+    return BS_ERROR;
   }
 
-  return MAX30208_OK;
+  return BS_OK;
 }
 
-max30208_status_t max30208_start_convert(max30208_t *me)
+base_status_t max30208_start_convert(max30208_t *me)
 {
   // Enable data ready
   MAX_CHECK(m_max30208_interrupt_enable(me, MAX30208_REG_INTERRUPT_ENABLE, MAX30208_INT_ENA_TEMP_RDY, true));
@@ -97,18 +78,18 @@ max30208_status_t max30208_start_convert(max30208_t *me)
   // Start convert temp
   MAX_CHECK(m_max30208_read_reg(me, MAX30208_REG_TEMP_SENSOR_SETUP, 0x01, 1));
 
-  return MAX30208_OK;
+  return BS_OK;
 }
 
-max30208_status_t max30208_get_interrupt_status(max30208_t *me, uint8_t *status)
+base_status_t max30208_get_interrupt_status(max30208_t *me, uint8_t *status)
 {
   // Get interrupt status
   MAX_CHECK(m_max30208_read_reg(me, MAX30208_REG_STATUS, status, 1));
 
-  return MAX30208_OK;
+  return BS_OK;
 }
 
-max30208_status_t max30208_get_fifo_available(max30208_t *me)
+base_status_t max30208_get_fifo_available(max30208_t *me)
 {
   // Get FIFO available
   MAX_CHECK(m_max30208_read_reg(me, MAX30208_REG_FIFO_OVERFLOW_COUNTER, &me->fifo_len, 1));
@@ -116,15 +97,15 @@ max30208_status_t max30208_get_fifo_available(max30208_t *me)
   if (0 != me->fifo_len)
   {
     me->fifo_len = 32;
-    return MAX30208_OK;
+    return BS_OK;
   }
 
   MAX_CHECK(m_max30208_read_reg(me, MAX30208_REG_DATA_COUNTER, &me->fifo_len, 1));
 
-  return MAX30208_OK;
+  return BS_OK;
 }
 
-max30208_status_t max30208_get_temperature(max30208_t *me, float *temp)
+base_status_t max30208_get_temperature(max30208_t *me, float *temp)
 {
   MAX_CHECK(m_max30208_read_reg(me, MAX30208_REG_DATA, *me->fifo, me->fifo_len));
 
@@ -134,7 +115,7 @@ max30208_status_t max30208_get_temperature(max30208_t *me, float *temp)
     *temp = m_max30208_calculate_temp(me->fifo[i], me->fifo[i + 1]) / (me->fifo_len / 2);
   }
 
-  return MAX30208_OK;
+  return BS_OK;
 }
 
 /* Private function definitions ---------------------------------------- */
@@ -149,14 +130,14 @@ max30208_status_t max30208_get_temperature(max30208_t *me, float *temp)
  * @attention     None
  *
  * @return
- * - MAX30208_OK
- * - MAX30208_ERR_I2C
+ * - BS_OK
+ * - BS_ERROR
  */
-static max30208_status_t m_max30208_read_reg(max30208_t *me, uint8_t reg, uint8_t *p_data, uint32_t len)
+static base_status_t m_max30208_read_reg(max30208_t *me, uint8_t reg, uint8_t *p_data, uint32_t len)
 {
-  CHECK(0 == me->i2c_read(me->device_address, reg, p_data, len), MAX30208_ERR_I2C);
+  CHECK(0 == me->i2c_read(me->device_address, reg, p_data, len), BS_ERROR);
 
-  return MAX30208_OK;
+  return BS_OK;
 }
 
 /**
@@ -170,14 +151,14 @@ static max30208_status_t m_max30208_read_reg(max30208_t *me, uint8_t reg, uint8_
  * @attention     None
  *
  * @return
- * - MAX30208_OK
- * - MAX30208_ERR_I2C
+ * - BS_OK
+ * - BS_ERROR
  */
-static max30208_status_t m_max30208_write_reg(max30208_t *me, uint8_t reg, uint8_t *p_data, uint32_t len)
+static base_status_t m_max30208_write_reg(max30208_t *me, uint8_t reg, uint8_t *p_data, uint32_t len)
 {
-  CHECK(0 == me->i2c_write(me->device_address, reg, p_data, len), MAX30208_ERR_I2C);
+  CHECK(0 == me->i2c_write(me->device_address, reg, p_data, len), BS_ERROR);
 
-  return MAX30208_OK;
+  return BS_OK;
 }
 
 /**
@@ -191,10 +172,10 @@ static max30208_status_t m_max30208_write_reg(max30208_t *me, uint8_t reg, uint8
  * @attention     None
  *
  * @return
- * - MAX30208_OK
- * - MAX30208_ERR_I2C
+ * - BS_OK
+ * - BS_ERROR
  */
-static max30208_status_t m_max30208_interrupt_enable(max30208_t *me, uint8_t reg, uint8_t intr, bool enable)
+static base_status_t m_max30208_interrupt_enable(max30208_t *me, uint8_t reg, uint8_t intr, bool enable)
 {
   uint8_t data = 0;
 
@@ -211,7 +192,7 @@ static max30208_status_t m_max30208_interrupt_enable(max30208_t *me, uint8_t reg
   }
   MAX_CHECK(m_max30208_write_reg(me, reg, &data, 1));
 
-  return MAX30208_OK;
+  return BS_OK;
 }
 
 /**
@@ -233,7 +214,4 @@ float m_max30208_calculate_temp(uint8_t msb, uint8_t lsb)
   return ((msb << 8) | (lsb)) * 0.005;
 }
 
-/* Undefine macros ---------------------------------------------------- */
-#undef CHECK
-#undef MAX_CHECK
 /* End of file -------------------------------------------------------- */

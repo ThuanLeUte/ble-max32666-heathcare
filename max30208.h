@@ -19,11 +19,10 @@ extern "C" {
 #endif
 
 /* Includes ----------------------------------------------------------- */
-#include <stdint.h>
-#include <stdbool.h>
+#include "bsp.h"
 
 /* Public defines ----------------------------------------------------- */
-#define MAX30208_I2C_ADDR                (0x90 >> 1)
+#define MAX30208_I2C_ADDR                  (0x90 >> 1)
 
 // Bit setup
 #define MAX30208_INT_ENA_AFULL             (1 << 4)
@@ -32,17 +31,6 @@ extern "C" {
 #define MAX30208_INT_ENA_TEMP_RDY          (1 << 0)
 
 /* Public enumerate/structure ----------------------------------------- */
-/**
- * @brief MAX30208 status
- */
-typedef enum
-{
-  MAX30208_OK = 0x00,
-  MAX30208_ERR_PARAM,
-  MAX30208_ERR_I2C
-}
-max30208_status_t;
-
 /**
  * @brief MAX30208 sensor struct
  */
@@ -60,7 +48,6 @@ typedef struct
 }
 max30208_t;
 
-
 /* Public macros ------------------------------------------------------ */
 /* Public variables --------------------------------------------------- */
 /* Public function prototypes ----------------------------------------- */
@@ -72,11 +59,10 @@ max30208_t;
  * @attention     None
  *
  * @return
- * - MAX30208_OK
- * - MAX30208_ERR_PARAM
- * - MAX30208_ERR_I2C 
+ * - BS_OK
+ * - BS_ERROR
  */
-max30208_status_t max30208_init(max30208_t *me);
+base_status_t max30208_init(max30208_t *me);
 
 /**
  * @brief         MAX30208 start convert data
@@ -86,10 +72,10 @@ max30208_status_t max30208_init(max30208_t *me);
  * @attention     None
  *
  * @return
- * - MAX30208_OK
- * - MAX30208_ERR_I2C 
+ * - BS_OK
+ * - BS_ERROR
  */
-max30208_status_t max30208_start_convert(max30208_t *me);
+base_status_t max30208_start_convert(max30208_t *me);
 
 /**
  * @brief         MAX30208 get interrupt status
@@ -100,10 +86,10 @@ max30208_status_t max30208_start_convert(max30208_t *me);
  * @attention     None
  *
  * @return
- * - MAX30208_OK
- * - MAX30208_ERR_I2C 
+ * - BS_OK
+ * - BS_ERROR
  */
-max30208_status_t max30208_get_interrupt_status(max30208_t *me, uint8_t *status);
+base_status_t max30208_get_interrupt_status(max30208_t *me, uint8_t *status);
 
 /**
  * @brief         MAX30208 get fifo available
@@ -113,10 +99,10 @@ max30208_status_t max30208_get_interrupt_status(max30208_t *me, uint8_t *status)
  * @attention     None
  *
  * @return
- * - MAX30208_OK
- * - MAX30208_ERR_I2C 
+ * - BS_OK
+ * - BS_ERROR
  */
-max30208_status_t max30208_get_fifo_available(max30208_t *me);
+base_status_t max30208_get_fifo_available(max30208_t *me);
 
 /**
  * @brief         MAX30208 get temperature
@@ -127,10 +113,10 @@ max30208_status_t max30208_get_fifo_available(max30208_t *me);
  * @attention     None
  *
  * @return
- * - MAX30208_OK
- * - MAX30208_ERR_I2C 
+ * - BS_OK
+ * - BS_ERROR
  */
-max30208_status_t max30208_get_temperature(max30208_t *me, float *temp);
+base_status_t max30208_get_temperature(max30208_t *me, float *temp);
 
 /* -------------------------------------------------------------------------- */
 #ifdef __cplusplus

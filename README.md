@@ -20,7 +20,7 @@ The requirements of this project are:
 11) Development sofware for the MAXM86146 could be used as reference to development the library https://www.maximintegrated.com/en/design/software-description.html/swpart=SFW0013460A
 12) Sensor Hub library MAX32664 could be used as reference only https://os.mbed.com/users/gmehmet/code/Maxim_Sensor_Hub_Communications_Library/
 13) HRM and SpO2 data must be readed by the MAX32666 from the MAXM86146/ MAX32664C.
-14)Use the BLE libraries and examples available on the Eclipse ARMCortex Toolchain.
+14) Use the BLE libraries and examples available on the Eclipse ARMCortex Toolchain.
 15) Create app_main, main and stack_app C files.
 16) Friendly and easy way to add GATT BLE services and create profiles.
 17) Implement functions which get data directly from local/global variables for each parameter on the GATT services.
