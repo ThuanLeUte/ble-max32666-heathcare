@@ -1,0 +1,64 @@
+/**
+ * @file       bsp_temp.h
+ * @copyright  Copyright (C) 2020 ThuanLe. All rights reserved.
+ * @license    This project is released under the ThuanLe License.
+ * @version    1.0.0
+ * @date       2021-03-24
+ * @author     Thuan Le
+ * @brief      Board support package for digital temperature sensor
+ * @note       None
+ * @example    None
+ */
+
+/* Define to prevent recursive inclusion ------------------------------ */
+#ifndef __BSP_TEMP_H
+#define __BSP_TEMP_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Includes ----------------------------------------------------------- */
+#include <stdint.h>
+#include <stdbool.h>
+#include "max30208.h"
+
+/* Public defines ----------------------------------------------------- */
+/* Public enumerate/structure ----------------------------------------- */
+/* Public macros ------------------------------------------------------ */
+/* Public variables --------------------------------------------------- */
+/* Public function prototypes ----------------------------------------- */
+/**
+ * @brief         BSP temperature sensor init
+ *
+ * @param[in]     None
+ *
+ * @attention     None
+ *
+ * @return
+ * - MAX30208_OK
+ * - MAX30208_ERR_PARAM
+ * - MAX30208_ERR_I2C
+ */
+max30208_status_t bsp_temp_init(void);
+
+/**
+ * @brief         BSP temperature sensor get
+ *
+ * @param[in]     temp      Pointer to handler temperature data
+ *
+ * @attention     None
+ *
+ * @return
+ * - MAX30208_OK
+ * - MAX30208_ERR_I2C
+ */
+max30208_status_t bsp_temp_get(float *temp);
+
+/* -------------------------------------------------------------------------- */
+#ifdef __cplusplus
+} // extern "C"
+#endif
+#endif // __BSP_TEMP_H
+
+/* End of file -------------------------------------------------------- */

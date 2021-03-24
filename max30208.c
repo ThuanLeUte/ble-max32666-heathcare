@@ -40,12 +40,6 @@
 #define MAX30208_REG_PART_ID_6                (0x36)
 #define MAX30208_REG_PART_IDENTIFIER          (0xFF)
 
-// Bit setup
-#define MAX30208_INT_ENA_AFULL             (1 << 4)
-#define MAX30208_INT_ENA_TEMP_LOW          (1 << 4)
-#define MAX30208_INT_ENA_TEMP_HIGH         (1 << 2)
-#define MAX30208_INT_ENA_TEMP_RDY          (1 << 0)
-
 #define MAX30208_PART_IDENTIFIER              (0X30)
 
 /* Private enumerate/structure ---------------------------------------- */

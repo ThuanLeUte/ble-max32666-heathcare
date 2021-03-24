@@ -25,6 +25,12 @@ extern "C" {
 /* Public defines ----------------------------------------------------- */
 #define MAX30208_I2C_ADDR                (0x90 >> 1)
 
+// Bit setup
+#define MAX30208_INT_ENA_AFULL             (1 << 4)
+#define MAX30208_INT_ENA_TEMP_LOW          (1 << 4)
+#define MAX30208_INT_ENA_TEMP_HIGH         (1 << 2)
+#define MAX30208_INT_ENA_TEMP_RDY          (1 << 0)
+
 /* Public enumerate/structure ----------------------------------------- */
 /**
  * @brief MAX30208 status
