@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "bsp_temp.h": "c",
-        "bsp.h": "c"
+        "bsp.h": "c",
+        "max32664.h": "c"
     }
 }

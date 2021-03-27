@@ -24,13 +24,40 @@ extern "C" {
 /* Public defines ----------------------------------------------------- */
 #define MAX32664_I2C_ADDR                (0x90 >> 1)
 
+#define DISABLE                0x00
+#define ENABLE                 0x01
+#define SET_FORMAT             0x00
+#define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
+#define WRITE_SET_THRESHOLD    0x01 //Index Byte for WRITE_INPUT(0x14)
+#define WRITE_EXTERNAL_TO_FIFO 0x00
+
 /* Public enumerate/structure ----------------------------------------- */
+/**
+ * @brief MAX32664 sensor struct
+ */
+typedef struct
+{
+  uint32_t ir_led;
+  uint32_t red_led;
+  uint16_t heart_rate; // LSB = 0.1bpm
+  uint8_t  confidence; // 0-100% LSB = 1%
+  uint16_t oxygen; // 0-100% LSB = 1%
+  uint8_t  status; // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
+  float    r_value;      // -- Algorithm Mode 2 vv
+  int8_t   ext_status;   // --
+  uint8_t  reserve_one;  // --
+  uint8_t  resserve_two; // -- Algorithm Mode 2 ^^
+}
+max32664_bio_data_t;
+
 /**
  * @brief MAX32664 sensor struct
  */
 typedef struct 
 {
   uint8_t  device_address;  // I2C device address
+
+  max32664_bio_data_t bio_data;
 
   // Read n-bytes from device's internal address <reg_addr> via I2C bus
   int (*i2c_read) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
@@ -88,6 +115,27 @@ enum FAMILY_REGISTER_BYTES
 };
 
 /**
+ * @brief Algorithm mode enable enum
+ */
+enum ALGORITHM_MODE_ENABLE_INDEX_BYTE
+{
+  ENABLE_AGC_ALGO  = 0x00,
+  ENABLE_WHRM_ALGO = 0x02
+};
+
+enum SENSOR_ENABLE_INDEX_BYTE 
+{
+  ENABLE_MAX30101 = 0x03,
+  ENABLE_ACCELEROMETER
+};
+
+enum FIFO_OUTPUT_INDEX_BYTE
+{
+  NUM_SAMPLES,
+  READ_DATA
+};
+
+/**
  * @brief MAX32664 mode enum
  */
 typedef enum
@@ -96,6 +144,22 @@ typedef enum
   MAX32664_MODE_2 = 0x01
 }
 max32664_mode_t;
+
+ /**
+ * @brief MAX32664 output mode write byte enum
+ */
+typedef enum
+{
+  PAUSE = 0x00,
+  SENSOR_DATA,
+  ALGO_DATA,
+  SENSOR_AND_ALGORITHM,
+  PAUSE_TWO,
+  SENSOR_COUNTER_BYTE,
+  ALGO_COUNTER_BYTE,
+  SENSOR_ALGO_COUNTER
+}
+max32664_output_mode_t;
 
 /* Public macros ------------------------------------------------------ */
 /* Public variables --------------------------------------------------- */

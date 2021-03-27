@@ -36,6 +36,16 @@ typedef enum
 }
 base_status_t;
 
+/**
+ * @brief Bool structure
+ */
+typedef enum
+{
+  BS_FALSE = 0x00,
+  BS_TRUE  = 0x01
+}
+bool_t;
+
 /* Public macros ------------------------------------------------------ */
 #define CHECK(expr, ret)            \
   do {                              \
@@ -45,10 +55,10 @@ base_status_t;
     }                               \
   } while (0)
 
-#define MAX_CHECK(expr)             \
+#define CHECK_STATUS(expr)          \
   do {                              \
-    base_status_t ret = (expr); \
-    if (BS_OK != ret) {       \
+    base_status_t ret = (expr);     \
+    if (BS_OK != ret) {             \
       NRF_LOG_INFO("%s", #expr);    \
       return (ret);                 \
     }                               \
@@ -65,5 +75,5 @@ base_status_t;
 
 /* Undefine macros ---------------------------------------------------- */
 #undef CHECK
-#undef MAX_CHECK
+#undef CHECK_STATUS
 /* End of file -------------------------------------------------------- */
