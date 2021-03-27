@@ -14,7 +14,7 @@
 #include "max32664.h"
 
 /* Private defines ---------------------------------------------------- */
-#define MAXFAST_ARRAY_SIZE        6  // Number of bytes....
+#define MAXFAST_ARRAY_SIZE        (6)
 
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
@@ -56,10 +56,10 @@ base_status_t max32664_init(max32664_t *me)
   if ((me == NULL) || (me->i2c_read == NULL) || (me->i2c_write == NULL))
     return BS_ERROR_PARAMS;
 
+  // Check device mode is application operating mode
   m_max32664_read_byte(me, READ_DEVICE_MODE, 0x00, &status);
 
-  if (status != SUCCESS)
-    return BS_ERROR;
+  CHECK_STATUS(status);
 
   return BS_OK;
 }
@@ -95,14 +95,19 @@ base_status_t max32664_config_bpm(max32664_t *me, max32664_mode_t mode)
 {
   uint8_t status;
 
+  // Set output mode is just algorithm data
   CHECK_STATUS(max32664_set_output_mode(me, ALGO_DATA), BS_ERROR);
 
+  // One sample before interrupt is fired
   CHECK_STATUS(max32664_set_fifo_threshold(me, 0x01), BS_ERROR);
 
+  // Enable AGC algorithm
   CHECK_STATUS(max32664_agc_algo_control(me, ENABLE), BS_ERROR);
 
-  CHECK_STATUS(max32664_control(me, ENABLE), BS_ERROR); // TODO: Check the register ENABLE_MAX30101
+  // Enable MAX86140 sensor
+  CHECK_STATUS(max32664_enable_max86140(me, ENABLE), BS_ERROR);
 
+  // Enable fast algorithm
   CHECK_STATUS(max32664_fast_algo_control(me, mode), BS_ERROR);
 
   return BS_OK;
@@ -119,11 +124,11 @@ base_status_t max32664_fast_algo_control(max32664_t *me, max32664_mode_t mode)
   return BS_OK;
 }
 
-base_status_t max32664_control(max32664_t *me, bool sen_switch)
+base_status_t max32664_enable_max86140(max32664_t *me, bool sen_switch)
 {
   uint8_t status;
 
-  CHECK_STATUS(m_max32664_write_byte(me, ENABLE_SENSOR, ENABLE_MAX30101, sen_switch, &status), BS_ERROR);
+  CHECK_STATUS(m_max32664_write_byte(me, ENABLE_SENSOR, ENABLE_MAX86140, sen_switch, &status), BS_ERROR);
 
   CHECK_STATUS(status);
 
@@ -189,12 +194,7 @@ static base_status_t m_max32664_read(max32664_t *me,
                                      uint32_t len,
                                      uint8_t *status)
 {
-  uint8_t buffer[2];
-
-  buffer[0] = cmd_index;
-  buffer[1] = write_byte;
-
-  CHECK(0 == me->i2c_write(me->device_address, cmd_family, buffer, 2), BS_ERROR);
+  CHECK(0 == me->i2c_write(me->device_address, cmd_family, &cmd_index, 1), BS_ERROR);
   me->delay(100);
   CHECK(0 == me->i2c_read(me->device_address, 0x00, p_data, len + 1), BS_ERROR);
 

@@ -11,40 +11,36 @@
  */
 
 /* Includes ----------------------------------------------------------- */
-#include "bsp_temp.h"
+#include "bsp_sh.h"
 
 /* Private defines ---------------------------------------------------- */
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
 /* Public variables --------------------------------------------------- */
 /* Private variables -------------------------------------------------- */
-static max30208_t m_max30208;
+static max32664_t m_max32664;
 
 /* Private function prototypes ---------------------------------------- */
 /* Function definitions ----------------------------------------------- */
-base_status_t bsp_temp_init(void)
+base_status_t bsp_sh_init(void)
 {
-  m_max30208.device_address = MAX30208_I2C_ADDR;
-  m_max30208.i2c_read       = bsp_i2c_read;
-  m_max30208.i2c_write      = bsp_i2c_write;
+  m_max32664.device_address = MAX32664_I2C_ADDR;
+  m_max32664.i2c_read       = bsp_i2c_read;
+  m_max32664.i2c_write      = bsp_i2c_write;
 
-  max30208_init(&m_max30208);
+  max32664_init(&m_max32664);
 
-  return max30208_start_convert(&m_max30208);
+  return max32664_config_bpm(&m_max32664, MODE_ONE);
 }
 
-base_status_t bsp_temp_get(float *temp)
+base_status_t bsp_sh_get_sensor_value(uint8_t *spo2, uint8_t *heart_rate)
 {
-  uint8_t status = 0;
+  max32664_read_bpm(&m_max32664);
 
-  max30208_get_interrupt_status(&m_max30208, &status);
+  *spo2 = m_max32664.bio_data.oxygen;
+  *heart_rate = m_max32664.bio_data.heart_rate;
 
-  if (status & MAX30208_INT_ENA_TEMP_RDY)
-  {
-    max30208_get_fifo_available(&m_max30208);
-  }
-
-  return max30208_get_temperature(&m_max30208, temp);
+  return BS_OK;
 }
 
 /* Private function definitions ---------------------------------------- */

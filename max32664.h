@@ -26,6 +26,8 @@ extern "C" {
 
 #define DISABLE                0x00
 #define ENABLE                 0x01
+#define MODE_ONE               0x01
+#define MODE_TWO               0x02
 #define SET_FORMAT             0x00
 #define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
 #define WRITE_SET_THRESHOLD    0x01 //Index Byte for WRITE_INPUT(0x14)
@@ -60,10 +62,10 @@ typedef struct
   max32664_bio_data_t bio_data;
 
   // Read n-bytes from device's internal address <reg_addr> via I2C bus
-  int (*i2c_read) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
+  base_status_t (*i2c_read) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
 
   // Write n-bytes from device's internal address <reg_addr> via I2C bus
-  int (*i2c_write) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
+  base_status_t (*i2c_write) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
 
   void (*delay) (uint16_t ms);
 }
@@ -119,14 +121,21 @@ enum FAMILY_REGISTER_BYTES
  */
 enum ALGORITHM_MODE_ENABLE_INDEX_BYTE
 {
-  ENABLE_AGC_ALGO  = 0x00,
-  ENABLE_WHRM_ALGO = 0x02
+  ENABLE_AGC_ALGO   = 0x00,
+  ENABLE_AFC_ALGO   = 0x01,
+  ENABLE_WHRM_ALGO  = 0x02,
+  ENABLE_ECG_ALGO   = 0x03,
+  ENABLE_BPT_ALGO   = 0x04,
+  ENABLE_WSPO2_ALGO = 0x05
 };
 
 enum SENSOR_ENABLE_INDEX_BYTE 
 {
-  ENABLE_MAX30101 = 0x03,
-  ENABLE_ACCELEROMETER
+  ENABLE_MAX86140      = 0x00,
+  ENABLE_MAX30205      = 0x01,
+  ENABLE_MAX30001      = 0x02,
+  ENABLE_MAX30101      = 0x03,
+  ENABLE_ACCELEROMETER = 0x04
 };
 
 enum FIFO_OUTPUT_INDEX_BYTE
@@ -176,6 +185,13 @@ max32664_output_mode_t;
  * - BS_ERROR
  */
 base_status_t max32664_init(max32664_t *me);
+base_status_t max32664_read_bpm(max32664_t *me);
+base_status_t max32664_config_bpm(max32664_t *me, max32664_mode_t mode);
+base_status_t max32664_fast_algo_control(max32664_t *me, max32664_mode_t mode);
+base_status_t max32664_control(max32664_t *me, bool sen_switch);
+base_status_t max32664_set_output_mode(max32664_t *me, max32664_output_mode_t output_type);
+base_status_t max32664_set_fifo_threshold(max32664_t *me, uint8_t threshold);
+base_status_t max32664_agc_algo_control(max32664_t *me, bool enable);
 
 /* -------------------------------------------------------------------------- */
 #ifdef __cplusplus

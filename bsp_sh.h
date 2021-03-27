@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
 /* Includes ----------------------------------------------------------- */
-#include "max30208.h"
+#include "max32664.h"
 
 /* Public defines ----------------------------------------------------- */
 /* Public enumerate/structure ----------------------------------------- */
@@ -27,7 +27,7 @@ extern "C" {
 /* Public variables --------------------------------------------------- */
 /* Public function prototypes ----------------------------------------- */
 /**
- * @brief         BSP temperature sensor init
+ * @brief         BSP sensor hub init
  *
  * @param[in]     None
  *
@@ -37,7 +37,7 @@ extern "C" {
  * - BS_OK
  * - BS_ERROR
  */
-base_status_t bsp_temp_init(void);
+base_status_t bsp_sh_init(void);
 
 /**
  * @brief         BSP temperature sensor get
@@ -50,7 +50,7 @@ base_status_t bsp_temp_init(void);
  * - BS_OK
  * - BS_ERROR
  */
-base_status_t bsp_temp_get(float *temp);
+base_status_t bsp_sh_get_value(uint8_t *spo2, uint8_t *heart_rate);
 
 /* -------------------------------------------------------------------------- */
 #ifdef __cplusplus
