@@ -1,0 +1,192 @@
+###### Changes in version 0.3.0    #############################################
+* Improving Bluetooth hardware restore from deep sleep.
+* Adding RTC trim procedure.
+* Fixing bug with SDMA restart.
+
+###### Changes in version 0.2.1-12 #############################################
+* Completing Bluetooth qualification of the link layer.
+* Fixing bug with Bluetooth counter rollover handling.
+* Making improvements to 2M PHY performance.
+* Including software AES for Bluetooth Controller.
+* Using TRNG to seed Bluetooth Controller random number function.
+* Adding necessary changes for revision A3. 
+* Limiting Bluetooth receiver window widening to increase RX perforrmance.
+* Allowing SDMA build time configuration structures to be updated from ARM.
+* Leaving VREGO_C and VERGO_D powered when entering deep sleep.
+* Adding additional BLuetooth examples.
+* Fixing bug to set core1 VTOR to the proper ISR address.
+* Improving current consumption and stability in BLE_fit_ds application.
+* Adding SPI pins configuration for a subset of the pins.
+
+###### Changes in version 0.2.1-10 #############################################
+* Renamed IRQ number 0x65 from RPU_IRQHandler to SCA_IRQHandler.
+* Changed some low-level register names and fields to match the User Guide.
+* Fixed incorrect RPU base address.
+
+###### Changes in version 0.2.1-9 #############################################
+* Adding Bootloader application and BLE file transfer to BLE_datc/BLE_dats.
+* Enabling PHY switching with SDMA.
+* Separating SDMA code and data sections into dedicated SRAM instances.
+* Adding Backup mode option to BLE_fit_ds example.
+* Adding PER reporing to BLE_datc when WSF_TRACE_ENABLED is defined. 
+* Adding QSPI and SPI_DMA examples, enhancing SPI example.
+* Enhancing USB_CompositeDevice_CDCACM example.
+
+###### Changes in version 0.2.1-8 #############################################
+* Fixing warning with FreeRTOS example. Prevening build with -mfloat-abi=soft 
+* Allowing for BLE Libraries to be built with -mfloat-abi=hard/soft/softfp
+* Fixing bug with BLE Encryption disable
+* Using default definition of 1 ms for WSF_MS_PER_TICK
+
+###### Changes in version 0.2.1-7 #############################################
+* Improved USB_CompositeDevice example to support high speed USB.
+* Added function to enter background mode to lp.c/h.
+* Added function to read the device's serial number (USN) to mxc_sys.c/h.
+* Provided missing wakeup timer functions (wut.c/h).
+* Added BLE deep sleep example.
+* Removed debug symbols from pre-built BLE libraries.
+* Made BLE transmit power a build time option.
+
+###### Changes in version 0.2.1-6 #############################################
+* Changed gcc.mk to allow overriding the -mfloat-abi and -mfpu switches.
+
+###### Changes in version 0.2.1-5 #############################################
+* Removed the CONSOLE_UART override in the config.mk files for BLE.
+* Addressed an issue with the BLE scanning apps that was causing a hard fault.
+* Added board support files for the MAX66900 and FTHR boards.
+* Made cmsis-dap the default debugger for the BLE apps.
+* Added configuration option to enable ECC.  Adjusted the example to use the
+  configuration option instead of setting up the ECC in the PreInit function.
+* Fixed bug in mxc_delay when dealing with very small delay times.
+* Fixed bug in SDHC code that affected asynchronous operations.
+* Fixed bug in SDHC_Lib_GetCapacity function.
+* Added a function to USB code to transmit test pattern.
+
+###### Changes in version 0.2.1-2 #############################################
+* Resolved parser errors when importing projects into Eclipse.
+* Added calls to LlGetBdAddr in SetAddress functions of the BLE examples.
+* Added debounce code to GPIO example.
+* Modifed I2C, SPI, and UART examples to wait for a push-button event before 
+  running.
+* Modified SDHC examples to ensure card is properly powered.
+* Increased the number of example projects that appear in Eclipse's new project 
+  wizard.
+* Added #defines for ADC->CTRL->CH_SEL and ADC->CTRL->ADC_DIVSEL fields.
+* Fixed incorrect bit positions for ADC->CTRL->ADC_DIVSEL and 
+  ADC->CTRL->DATA_ALIGN fields.
+* Populated dvs_regs.h file.
+* Removed references to GPIO2, MIPI, and PBM.
+* Fixed incorrect offsets for SIMO registers.
+* Fixed the ADC channel select enumeration.
+* Added SDHC_PowerUp and SDHC_PowerDown functions to the SDHC API.
+* Added a UART_Disable function to the UART API.
+* Fixed error where incorrect reference voltage was selected for certain ADC 
+  channels.
+* Fixed errors in I2C code where the incorrect register was written when 
+  attempting to configure FIFO threshold levels.
+* Swapped the order in which I2C FIFOs are handled so that transmit is handled 
+  before receive.
+* Fixed error that occurred when attempting to disable SPI2.
+* Added ECC and LCD examples.
+* Modified USB libraries to allow chaining of class requests.
+
+###### Changes in version 0.2.1-0 #############################################
+* Updated SPIXF and SPIXR example to work with EV kit hardware.
+* Added USB composite device example.
+* Adjusted flash page size settings to match hardware.
+* Set MXC_ICC1 to the correct base address.
+* Set MXC_SPIx to the correct base addresses.
+* Moved default implementation of SysTick_Handler from startup_max32665.S to 
+  mxc_delay.c.
+* Renamed crypto_maa_clcsel_t structure to tpu_maa_clcsel_t.
+* Added RTC_GetTime function to provide an atomic read of the RTC's seconds and
+  subseconds registers.
+* Fixed bug in Flash write/erase operations to properly clear internal caches 
+  after operation completes.
+* Added SPI code to disallow changing the character size in the middle of a
+  transaction.
+* Improved support for 3-wire and 4-wire SPI modes for SPI0.
+* Modified SPI0 code to keep output line low when performing a transaction with
+  a transmit length of zero.
+* Modified SPI0 code to allow another transaction to be armed from within the
+  callback function of the current transaction.
+* Fixed bug in USB driver that was causing a packet to be skipped when
+  transmitting data.
+* Added the ability to ignore the the DTE signal state for the CDC-ACM class.
+* Changed return code of SDHC_LIB_GetBlockSize from unsigned int to signed int 
+  allowing negative return values to be used to represent errors.
+* I2C clock speed settings adjusted for better performance in high-speed mode.
+* I2C driver modified to better handle transactions using a repeated start.
+* I2C driver modified to return error when slave address is not acknowledged.
+* Improved API documentation.
+* Added BLE vendor specific HCI Command for setting controller supported 
+  features.
+* Added BLE vendor specific HCI Command for sending custom data channel PDUs. 
+* Added support for LE Read Local P-256 Public Key Command and LE Generate 
+  DHKey Command.
+* Fixed bugs with BLE PHY update procedure. 
+* Fixed bug with BLE dvertising pause and connection request processing.
+* Fixed bug with BLE AES encryption. 
+* Updated default BLE controller supported features.
+* Added sending of BLE channel selection algorithm event to peer. 
+* Added prevention of mixing BLE legacy and extended advertising commands. 
+* Added sending unknown BLE response PDUs to malformed Link Layer Control 
+  Packets.
+* Added usage of BLE RF path compensation values in the calculation of RSSI and 
+  maximum TX Power.
+
+###### Changes in version 0.2.0-0 #############################################
+* Added "#pragma system_include" to all register header files.
+* Removed enumerations of 1-bit fields in the register header files.
+* Fixed errors in gcr_reg.h file.  Certain fields had the incorrect location.
+* PWRSEQ->bb_gp0 renamed ro PWRSEQ->gp0.
+* PWRSEQ->bb_gp1 renamed ro PWRSEQ->gp1.
+* Added definitions for the SIMO registers and fields.
+* Changed defined UART FIFO size to match actual hardware FIFO size.
+* BBCTRL renamed to FCR.  The registers and fields within these register header
+  files have been renamed also.
+* HTIMER renamed to HTMR.  This affects all related function names,
+  configuration objects, etc.
+* BBCTRL renamed to MCR.  This affects all related function names,
+  configuration objects, etc.
+* SPID renamed to SPIXR.  This affects all related function names,
+  configuration objects, etc.
+* SPIX renamed to SPIXF.  This affects all related function names,
+  configuration objects, etc.
+* SPIXC renamed to SPIXFC.  This affects all related function names,
+  configuration objects, etc.
+* CRYPTO renamed to TPU.  This affects all related function names,
+  configuration objects, etc.
+* crypto.c split into cipher.c and hash.c APIs.
+* Modified GCC linker file to add support for eternal SPI memories and to
+  handle both internal ARM cores.
+* Cleaned up interrupt vector table to remove (rename to RSVxx) unused vectors.
+* FLC_Erase renamed to FLC_MultiPageErase.
+* FLC_BufferErase renamed to FLC_Erase.
+* Added LP_FastWakeupEnable, LP_FastWakeupDisable, LP_PowerFailMonitorEnable,
+  and LP_PowerFailMonitorDisable functions.
+* SYS_ClockEnable_X32K renamed to SYS_RTCClockEnable.
+* SYS_Reset0 renamed to SYS_Reset_Periph and the code modified to handle all
+  peripherals defined in the rstr0 and rstr1 registers.
+* Added a function (PT_GetBPS) to the pulse train API to retreive the current
+  rate of a given pulse train.
+* Added a function (RPU_IsAllowed) to the resource protection unit API to check
+  if the current process is allowed to modify the protection settings.
+* Added an API for controlling the secondary ARM core.
+* Removed empty audio.c and audio.h files.
+* Support for all system clocks added.  (Previous release only allowed
+  switching between 96M and 8M clocks.)
+* Implemented SIMO API.
+* Modified mxc_syc to no longer shutdown any of the system clocks when
+  peripherals are disabled.  This control is now left to the application.
+* LP example improved to acheive better (lower) power measurements.
+* TRNG example expanded to demonstrate using a random IV when performing an
+  encryption.
+* Added example on using the ADC.
+* Added example on using both ARM cores.
+* Added example on using the resource protection unit.
+* MX25 library code cleaned up to add consistency in capitalization and
+  function names.
+
+###### Changes in version 0.1.0-2 #############################################
+* Initial release
