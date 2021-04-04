@@ -75,16 +75,20 @@ endif
 
 # This is the path to the CMSIS root directory
 ifeq "$(MAXIM_PATH)" ""
-LIBS_DIR=../../../Libraries
-NDALIBS_DIR=../../../NDALibraries
+# LIBS_DIR=../../../Libraries
+# NDALIBS_DIR=../../../NDALibraries
 else
-LIBS_DIR=/$(subst \,/,$(subst :,,$(MAXIM_PATH))/Firmware/$(TARGET_UC)/Libraries)
+# LIBS_DIR=/$(subst \,/,$(subst :,,$(MAXIM_PATH))/Firmware/$(TARGET_UC)/Libraries)
 endif
+LIBS_DIR=../../fw/Libraries
+NDALIBS_DIR=../../fw/NDALibraries
 CMSIS_ROOT=$(LIBS_DIR)/CMSIS
 
 # Source files for this test (add path to VPATH below)
 SRCS  = main.c
 SRCS += stack_dats.c
+SRCS += bsp.c
+
 SRCS += dats_main.c
 
 # Where to find source files for this test

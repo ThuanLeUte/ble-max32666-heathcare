@@ -2,6 +2,7 @@
     "files.associations": {
         "bsp_temp.h": "c",
         "bsp.h": "c",
-        "max32664.h": "c"
+        "max32664.h": "c",
+        "dats_api.h": "c"
     }
 }
