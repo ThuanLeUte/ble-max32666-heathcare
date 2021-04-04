@@ -3,6 +3,8 @@
         "bsp_temp.h": "c",
         "bsp.h": "c",
         "max32664.h": "c",
-        "dats_api.h": "c"
+        "dats_api.h": "c",
+        "svc_cfg.h": "c",
+        "svc_wp.h": "c"
     }
 }

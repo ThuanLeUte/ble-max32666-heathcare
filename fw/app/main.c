@@ -52,6 +52,7 @@
 #include "bb_drv.h"
 #include "board.h"
 #include "ipc_defs.h"
+#include "tmr_utils.h"
 
 /**************************************************************************************************
   Macros

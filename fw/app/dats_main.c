@@ -42,6 +42,10 @@
 #include "svc_wp.h"
 #include "util/calc128.h"
 #include "dats/dats_api.h"
+
+#include "ble_bas.h"
+#include "ble_bos.h"
+
 #if WDXS_INCLUDED  == TRUE
 #include "wsf_efs.h"
 #include "svc_wdxs.h"
@@ -65,6 +69,7 @@ enum
 #endif /* WDXS_INCLUDED */
   DATS_GATT_SC_CCC_IDX,           /*! GATT service, service changed characteristic */
   DATS_WP_DAT_CCC_IDX,            /*! ARM Ltd. proprietary service, data transfer characteristic */
+  DATS_WP_DAT_CCC_IDX1,            /*! ARM Ltd. proprietary service, data transfer characteristic */
   DATS_NUM_CCC_IDX
 };
 
@@ -242,6 +247,7 @@ static const attsCccSet_t datsCccSet[DATS_NUM_CCC_IDX] =
   {WDXS_AU_CH_CCC_HDL,    ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   /* WDXS_AU_CH_CCC_IDX */
 #endif /* WDXS_INCLUDED */
   {GATT_SC_CH_CCC_HDL,    ATT_CLIENT_CFG_INDICATE,  DM_SEC_LEVEL_NONE},   /* DATS_GATT_SC_CCC_IDX */
+  {WP_DAT_CH_CCC_HDL,     ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},    /* DATS_WP_DAT_CCC_IDX */
   {WP_DAT_CH_CCC_HDL,     ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE}    /* DATS_WP_DAT_CCC_IDX */
 };
 
@@ -815,8 +821,10 @@ void DatsStart(void)
 
   /* Initialize attribute server database */
   SvcCoreAddGroup();
-  SvcWpCbackRegister(NULL, datsWpWriteCback);
-  SvcWpAddGroup();
+  // SvcWpCbackRegister(NULL, datsWpWriteCback);
+  // SvcWpAddGroup();
+  ble_bos_init();
+  ble_bas_init();
 
 #if WDXS_INCLUDED == TRUE
   /* Initialize the WDXS Stream */

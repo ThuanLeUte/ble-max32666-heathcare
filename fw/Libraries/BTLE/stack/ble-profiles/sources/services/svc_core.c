@@ -40,10 +40,10 @@
 #endif
 
 /*! Default device name */
-#define CORE_DEFAULT_DEV_NAME       "Cordio"
+#define CORE_DEFAULT_DEV_NAME       "MAX32666 BLE"
 
 /*! Length of default device name */
-#define CORE_DEFAULT_DEV_NAME_LEN   6
+#define CORE_DEFAULT_DEV_NAME_LEN   12
 
 /**************************************************************************************************
  GAP group

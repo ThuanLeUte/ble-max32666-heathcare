@@ -87,15 +87,23 @@ CMSIS_ROOT=$(LIBS_DIR)/CMSIS
 # Source files for this test (add path to VPATH below)
 SRCS  = main.c
 SRCS += stack_dats.c
-SRCS += bsp.c
-
 SRCS += dats_main.c
+
+SRCS += bsp.c
+SRCS += ble_bos.
+SRCS += ble_bas.
 
 # Where to find source files for this test
 VPATH  = .
+VPATH  += sys
+VPATH  += components
+VPATH  += ble_services
 
 # Where to find header files for this test
 IPATH  = .
+IPATH  += sys
+IPATH  += components
+IPATH  += ble_services
 
 ##############################################################################
 # OS Check/Utility definitions
