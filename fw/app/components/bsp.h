@@ -21,6 +21,7 @@ extern "C" {
 /* Includes ----------------------------------------------------------- */
 #include <stdint.h>
 #include <stdbool.h>
+#include "stdio.h"
 #include <string.h>
 
 /* Public defines ----------------------------------------------------- */
@@ -50,7 +51,7 @@ bs_bool_t;
 #define CHECK(expr, ret)            \
   do {                              \
     if (!(expr)) {                  \
-      NRF_LOG_INFO("%s", #expr);    \
+      printf("Error: %s\n", #expr); \
       return (ret);                 \
     }                               \
   } while (0)
@@ -59,7 +60,7 @@ bs_bool_t;
   do {                              \
     base_status_t ret = (expr);     \
     if (BS_OK != ret) {             \
-      NRF_LOG_INFO("%s", #expr);    \
+      printf("Error: %s\n", #expr); \
       return (ret);                 \
     }                               \
   } while (0)
@@ -108,6 +109,4 @@ base_status_t bsp_i2c_write(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data,
 #endif // __BSP_H
 
 /* Undefine macros ---------------------------------------------------- */
-#undef CHECK
-#undef CHECK_STATUS
 /* End of file -------------------------------------------------------- */

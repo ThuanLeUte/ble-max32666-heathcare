@@ -5,6 +5,7 @@
         "max32664.h": "c",
         "dats_api.h": "c",
         "svc_cfg.h": "c",
-        "svc_wp.h": "c"
+        "svc_wp.h": "c",
+        "max30208.h": "c"
     }
 }

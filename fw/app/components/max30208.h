@@ -22,7 +22,7 @@ extern "C" {
 #include "bsp.h"
 
 /* Public defines ----------------------------------------------------- */
-#define MAX30208_I2C_ADDR                  (0x90 >> 1)
+#define MAX30208_I2C_ADDR                  (0x50 << 1)
 
 // Bit setup
 #define MAX30208_INT_ENA_AFULL             (1 << 4)
@@ -37,7 +37,7 @@ extern "C" {
 typedef struct 
 {
   uint8_t  device_address;  // I2C device address
-  uint8_t  fifo[16];        // FIFO data
+  uint8_t  fifo[32];        // FIFO data
   uint8_t  fifo_len;        // FIFO length
 
   // Read n-bytes from device's internal address <reg_addr> via I2C bus

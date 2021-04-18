@@ -13,7 +13,6 @@
 /* Includes ----------------------------------------------------------- */
 #include "bsp.h"
 #include "i2c.h"
-#include "stdio.h"
 
 /* Private defines ---------------------------------------------------- */
 #define I2C_MASTER    MXC_I2C0_BUS0
@@ -43,7 +42,7 @@ static void bsp_i2c_init(void)
 base_status_t bsp_i2c_read(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len)
 {
   int ret;
-  uint8_t buff[20];
+  uint8_t buff[50];
 
   buff[0] = reg_addr;
 
@@ -61,7 +60,7 @@ base_status_t bsp_i2c_write(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data,
 {
   printf("I2C writing");
   int ret;
-  uint8_t buff[20];
+  uint8_t buff[50];
 
   buff[0] = reg_addr;
   memcpy(&buff[1], data, len);

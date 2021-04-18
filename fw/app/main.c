@@ -55,6 +55,7 @@
 #include "tmr_utils.h"
 
 #include "bsp.h"
+#include "bsp_temp.h"
 
 /**************************************************************************************************
   Macros
@@ -201,12 +202,17 @@ int main(void)
 
     printf("bsp_init\n");
     bsp_init();
-    uint8_t data = 100;
-    printf("bsp_i2c_write\n");
 
+    bsp_temp_init();
+
+    printf("bsp_i2c_write\n");
+    uint8_t data = 100;
+    float temp = 0;
     while (1)
     {
-        bsp_i2c_write(0x10, 0x23, &data, 1);
+        // bsp_i2c_write(0x10, 0x23, &data, 1);
+        bsp_temp_get(&temp);
+        printf("Temmperature: %d \n", (uint8_t)temp);
         TMR_Delay(MXC_TMR0, MSEC(1000), 0);
 
         /* code */

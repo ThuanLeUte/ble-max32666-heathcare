@@ -90,8 +90,10 @@ SRCS += stack_dats.c
 SRCS += dats_main.c
 
 SRCS += bsp.c
-SRCS += ble_bos.
-SRCS += ble_bas.
+SRCS += bsp_temp.c
+SRCS += max30208.c
+SRCS += ble_bos.c
+SRCS += ble_bas.c
 
 # Where to find source files for this test
 VPATH  = .

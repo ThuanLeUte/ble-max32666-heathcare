@@ -12,6 +12,7 @@
 
 /* Includes ----------------------------------------------------------- */
 #include "max30208.h"
+#include "bsp.h"
 
 /* Private defines ---------------------------------------------------- */
 // Registers
@@ -60,7 +61,7 @@ base_status_t max30208_init(max30208_t *me)
   if ((me == NULL) || (me->i2c_read == NULL) || (me->i2c_write == NULL))
     return BS_ERROR;
 
-  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_PART_IDENTIFIER, identifier, 1));
+  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_PART_IDENTIFIER, &identifier, 1));
 
   if (MAX30208_PART_IDENTIFIER != identifier)
   {
@@ -72,11 +73,13 @@ base_status_t max30208_init(max30208_t *me)
 
 base_status_t max30208_start_convert(max30208_t *me)
 {
+  uint8_t data = 0x01;
+
   // Enable data ready
   CHECK_STATUS(m_max30208_interrupt_enable(me, MAX30208_REG_INTERRUPT_ENABLE, MAX30208_INT_ENA_TEMP_RDY, true));
 
   // Start convert temp
-  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_TEMP_SENSOR_SETUP, 0x01, 1));
+  CHECK_STATUS(m_max30208_write_reg(me, MAX30208_REG_TEMP_SENSOR_SETUP, &data, 1));
 
   return BS_OK;
 }
@@ -107,12 +110,14 @@ base_status_t max30208_get_fifo_available(max30208_t *me)
 
 base_status_t max30208_get_temperature(max30208_t *me, float *temp)
 {
-  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_DATA, *me->fifo, me->fifo_len));
+  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_DATA, me->fifo, 1));
+
+  *temp = *me->fifo;
 
   // Calculate temparature
   for (uint8_t i = 0; i < (me->fifo_len / 2); i++)
   {
-    *temp = m_max30208_calculate_temp(me->fifo[i], me->fifo[i + 1]) / (me->fifo_len / 2);
+    // *temp = m_max30208_calculate_temp(me->fifo[i], me->fifo[i + 1]) / (me->fifo_len / 2);
   }
 
   return BS_OK;
