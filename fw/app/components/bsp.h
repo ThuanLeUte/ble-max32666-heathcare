@@ -44,7 +44,7 @@ typedef enum
   BS_FALSE = 0x00,
   BS_TRUE  = 0x01
 }
-bool_t;
+bs_bool_t;
 
 /* Public macros ------------------------------------------------------ */
 #define CHECK(expr, ret)            \
@@ -66,6 +66,9 @@ bool_t;
 
 /* Public variables --------------------------------------------------- */
 /* Public function prototypes ----------------------------------------- */
+void bsp_init(void);
+
+
 /**
  * @brief         I2C write
  *

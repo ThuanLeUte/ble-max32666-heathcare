@@ -54,6 +54,8 @@
 #include "ipc_defs.h"
 #include "tmr_utils.h"
 
+#include "bsp.h"
+
 /**************************************************************************************************
   Macros
 **************************************************************************************************/
@@ -196,6 +198,20 @@ int main(void)
     AppUiActionRegister(SetAddress);
     
     printf("Setup Complete\n");
+
+    printf("bsp_init\n");
+    bsp_init();
+    uint8_t data = 100;
+    printf("bsp_i2c_write\n");
+
+    while (1)
+    {
+        bsp_i2c_write(0x10, 0x23, &data, 1);
+        TMR_Delay(MXC_TMR0, MSEC(1000), 0);
+
+        /* code */
+    }
+    
 
 #ifdef ENABLE_SDMA
     sdmaFlag = SDMA_FLAG_INIT;

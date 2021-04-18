@@ -66,6 +66,9 @@ bool_t;
 
 /* Public variables --------------------------------------------------- */
 /* Public function prototypes ----------------------------------------- */
+void bsp_init(void);
+
+
 /**
  * @brief         I2C write
  *
