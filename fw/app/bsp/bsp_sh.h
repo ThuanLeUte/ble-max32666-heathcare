@@ -1,54 +1,35 @@
 /**
- * @file       max32664.c
+ * @file       bsp_sh.h
  * @copyright  Copyright (C) 2020 ThuanLe. All rights reserved.
  * @license    This project is released under the ThuanLe License.
  * @version    1.0.0
- * @date       2021-03-22
+ * @date       2021-03-24
  * @author     Thuan Le
- * @brief      Driver support MAX32664
+ * @brief      Board support package for Sensor Hub
  * @note       None
  * @example    None
  */
 
 /* Define to prevent recursive inclusion ------------------------------ */
-#ifndef __MAX32664_H
-#define __MAX32664_H
+#ifndef __BSP_SH_H
+#define __BSP_SH_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Includes ----------------------------------------------------------- */
-#include "bsp.h"
+#include "max32664.h"
 
 /* Public defines ----------------------------------------------------- */
-#define MAX32664_I2C_ADDR                (0x90 >> 1)
-
-
 /* Public enumerate/structure ----------------------------------------- */
-/**
- * @brief MAX32664 sensor struct
- */
-typedef struct 
-{
-  uint8_t  device_address;  // I2C device address
-
-  // Read n-bytes from device's internal address <reg_addr> via I2C bus
-  int (*i2c_read) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
-
-  // Write n-bytes from device's internal address <reg_addr> via I2C bus
-  int (*i2c_write) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
-}
-max32664_t;
-
-
 /* Public macros ------------------------------------------------------ */
 /* Public variables --------------------------------------------------- */
 /* Public function prototypes ----------------------------------------- */
 /**
- * @brief         Initialize MAX32664
+ * @brief         BSP sensor hub init
  *
- * @param[in]     me            Pointer to handle of MAX32664 module.
+ * @param[in]     None
  *
  * @attention     None
  *
@@ -56,13 +37,25 @@ max32664_t;
  * - BS_OK
  * - BS_ERROR
  */
-base_status_t max32664_init(max32664_t *me);
+base_status_t bsp_sh_init(void);
 
+/**
+ * @brief         BSP temperature sensor get
+ *
+ * @param[in]     temp      Pointer to handler temperature data
+ *
+ * @attention     None
+ *
+ * @return
+ * - BS_OK
+ * - BS_ERROR
+ */
+base_status_t bsp_sh_get_sensor_value(uint8_t *spo2, uint8_t *heart_rate);
 
 /* -------------------------------------------------------------------------- */
 #ifdef __cplusplus
 } // extern "C"
 #endif
-#endif // __MAX32664_H
+#endif // __BSP_SH_H
 
 /* End of file -------------------------------------------------------- */

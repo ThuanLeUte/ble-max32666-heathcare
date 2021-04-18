@@ -91,7 +91,9 @@ SRCS += dats_main.c
 
 SRCS += bsp.c
 SRCS += bsp_temp.c
+SRCS += bsp_sh.c
 SRCS += max30208.c
+SRCS += max32664.c
 SRCS += ble_bos.c
 SRCS += ble_bas.c
 
@@ -99,12 +101,14 @@ SRCS += ble_bas.c
 VPATH  = .
 VPATH  += sys
 VPATH  += components
+VPATH  += bsp
 VPATH  += ble_services
 
 # Where to find header files for this test
 IPATH  = .
 IPATH  += sys
 IPATH  += components
+IPATH  += bsp
 IPATH  += ble_services
 
 ##############################################################################

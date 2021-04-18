@@ -22,7 +22,7 @@ extern "C" {
 #include "bsp.h"
 
 /* Public defines ----------------------------------------------------- */
-#define MAX32664_I2C_ADDR                (0x90 >> 1)
+#define MAX32664_I2C_ADDR                (0x55 << 1)
 
 #define DISABLE                0x00
 #define ENABLE                 0x01
