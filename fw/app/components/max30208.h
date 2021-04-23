@@ -37,7 +37,7 @@ extern "C" {
 typedef struct 
 {
   uint8_t  device_address;  // I2C device address
-  uint8_t  fifo[32];        // FIFO data
+  uint8_t  fifo[64];        // FIFO data
   uint8_t  fifo_len;        // FIFO length
 
   // Read n-bytes from device's internal address <reg_addr> via I2C bus

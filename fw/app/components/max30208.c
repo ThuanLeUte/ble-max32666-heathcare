@@ -1,3 +1,4 @@
+//////// cu
 /**
  * @file       max30208.h
  * @copyright  Copyright (C) 2020 ThuanLe. All rights reserved.
@@ -12,36 +13,38 @@
 
 /* Includes ----------------------------------------------------------- */
 #include "max30208.h"
+#include "max32665.h"
 #include "bsp.h"
+#include "tmr_utils.h"
 
 /* Private defines ---------------------------------------------------- */
 // Registers
-#define MAX30208_REG_STATUS                   (0x00)
-#define MAX30208_REG_INTERRUPT_ENABLE         (0x01)
-#define MAX30208_REG_FIFO_WRITE_POINTER       (0x04)
-#define MAX30208_REG_FIFO_READ_POINTER        (0x05)
-#define MAX30208_REG_FIFO_OVERFLOW_COUNTER    (0x06)
-#define MAX30208_REG_DATA_COUNTER             (0x07)
-#define MAX30208_REG_DATA                     (0x08)
-#define MAX30208_REG_FIFO_CONFIG_1            (0x09)
-#define MAX30208_REG_FIFO_CONFIG_2            (0x0A)
-#define MAX30208_REG_SYSTEM_CONTROL           (0x0C)
-#define MAX30208_REG_ALARM_HIGH_MSB           (0x10)
-#define MAX30208_REG_ALARM_HIGH_LSB           (0x11)
-#define MAX30208_REG_ALARM_LOW_MSB            (0x12)
-#define MAX30208_REG_ALARM_LOW_LSB            (0x13)
-#define MAX30208_REG_TEMP_SENSOR_SETUP        (0x14)
-#define MAX30208_REG_GPIO_SETUP               (0x20)
-#define MAX30208_REG_GPIO_CONTROL             (0x21)
-#define MAX30208_REG_PART_ID_1                (0x31)
-#define MAX30208_REG_PART_ID_2                (0x32)
-#define MAX30208_REG_PART_ID_3                (0x33)
-#define MAX30208_REG_PART_ID_4                (0x34)
-#define MAX30208_REG_PART_ID_5                (0x35)
-#define MAX30208_REG_PART_ID_6                (0x36)
-#define MAX30208_REG_PART_IDENTIFIER          (0xFF)
+#define MAX30208_REG_STATUS (0x00)
+#define MAX30208_REG_INTERRUPT_ENABLE (0x01)
+#define MAX30208_REG_FIFO_WRITE_POINTER (0x04)
+#define MAX30208_REG_FIFO_READ_POINTER (0x05)
+#define MAX30208_REG_FIFO_OVERFLOW_COUNTER (0x06)
+#define MAX30208_REG_DATA_COUNTER (0x07)
+#define MAX30208_REG_DATA (0x08)
+#define MAX30208_REG_FIFO_CONFIG_1 (0x09)
+#define MAX30208_REG_FIFO_CONFIG_2 (0x0A)
+#define MAX30208_REG_SYSTEM_CONTROL (0x0C)
+#define MAX30208_REG_ALARM_HIGH_MSB (0x10)
+#define MAX30208_REG_ALARM_HIGH_LSB (0x11)
+#define MAX30208_REG_ALARM_LOW_MSB (0x12)
+#define MAX30208_REG_ALARM_LOW_LSB (0x13)
+#define MAX30208_REG_TEMP_SENSOR_SETUP (0x14)
+#define MAX30208_REG_GPIO_SETUP (0x20)
+#define MAX30208_REG_GPIO_CONTROL (0x21)
+#define MAX30208_REG_PART_ID_1 (0x31)
+#define MAX30208_REG_PART_ID_2 (0x32)
+#define MAX30208_REG_PART_ID_3 (0x33)
+#define MAX30208_REG_PART_ID_4 (0x34)
+#define MAX30208_REG_PART_ID_5 (0x35)
+#define MAX30208_REG_PART_ID_6 (0x36)
+#define MAX30208_REG_PART_IDENTIFIER (0xFF)
 
-#define MAX30208_PART_IDENTIFIER              (0X30)
+#define MAX30208_PART_IDENTIFIER (0X30)
 
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
@@ -60,64 +63,81 @@ base_status_t max30208_init(max30208_t *me)
 
   if ((me == NULL) || (me->i2c_read == NULL) || (me->i2c_write == NULL))
     return BS_ERROR;
-
   CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_PART_IDENTIFIER, &identifier, 1));
-
+ 
   if (MAX30208_PART_IDENTIFIER != identifier)
   {
     return BS_ERROR;
   }
-
   return BS_OK;
 }
 
 base_status_t max30208_start_convert(max30208_t *me)
 {
-  uint8_t data = 0x01;
-
-  // Enable data ready
-  CHECK_STATUS(m_max30208_interrupt_enable(me, MAX30208_REG_INTERRUPT_ENABLE, MAX30208_INT_ENA_TEMP_RDY, true));
-
+  uint8_t data = 0xC1;
   // Start convert temp
   CHECK_STATUS(m_max30208_write_reg(me, MAX30208_REG_TEMP_SENSOR_SETUP, &data, 1));
-
   return BS_OK;
 }
 
 base_status_t max30208_get_interrupt_status(max30208_t *me, uint8_t *status)
 {
-  // Get interrupt status
-  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_STATUS, status, 1));
+  // Get interrupt status TEMP+RDY
 
+  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_STATUS, status, 1));
   return BS_OK;
 }
 
 base_status_t max30208_get_fifo_available(max30208_t *me)
 {
-  // Get FIFO available
-  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_FIFO_OVERFLOW_COUNTER, &me->fifo_len, 1));
+  uint8_t sample = 0, count = 0;
 
-  if (0 != me->fifo_len)
+  // Get sample avalable
+
+  printf("START GET NUMBER OF SAMPLE\n");
+ do
+ {
+  max30208_start_convert(me);         // Start command allow get sample
+  TMR_Delay(MXC_TMR0, MSEC(50), 0);  // Get 1 sample time 20HZ
+  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_DATA_COUNTER, &sample, 1));
+  printf("sample: %d \n", sample);
+
+ } while (sample < 32);
+ 
+
+ // Time to convert
+  TMR_Delay(MXC_TMR0, MSEC(15), 0);
+
+
+  // GET COUNTER OVERFLOW
+
+  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_FIFO_OVERFLOW_COUNTER, &count, 1));
+   printf("count: %d \n", count);
+ 
+  if (count == 0)
   {
-    me->fifo_len = 32;
-    return BS_OK;
+    me->fifo_len = sample;
   }
-
-  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_DATA_COUNTER, &me->fifo_len, 1));
+  else
+    me->fifo_len = 32;
 
   return BS_OK;
 }
 
 base_status_t max30208_get_temperature(max30208_t *me, float *temp)
 {
-  CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_DATA, me->fifo, 1));
+ 
+  max30208_start_convert(me);
 
-  *temp = *me->fifo;
-
-  // Calculate temparature
-  for (uint8_t i = 0; i < (me->fifo_len / 2); i++)
+  if (me->fifo_len == 32)
   {
-    // *temp = m_max30208_calculate_temp(me->fifo[i], me->fifo[i + 1]) / (me->fifo_len / 2);
+    CHECK_STATUS(m_max30208_read_reg(me, MAX30208_REG_DATA, me->fifo, me->fifo_len * 2));
+    for (uint8_t i = 0; i < (me->fifo_len * 2); i = i + 2)
+    {
+      *temp += m_max30208_calculate_temp(me->fifo[i], me->fifo[i + 1]);
+    }
+    *temp /= (me->fifo_len);
+
   }
 
   return BS_OK;

@@ -48,7 +48,7 @@ base_status_t bsp_i2c_read(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, 
   ret = I2C_MasterWrite(I2C_MASTER, slave_addr, &reg_addr, sizeof(reg_addr), 1);
   if (ret != 1)
   {
-    printf("Error reading: %d\n", ret);
+    //printf("Error reading: %d\n", ret);
     return BS_ERROR;
   }
 
