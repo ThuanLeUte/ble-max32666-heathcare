@@ -30,7 +30,7 @@ base_status_t bsp_sh_init(void)
 
   max32664_init(&m_max32664);
 
-  return max32664_config_bpm(&m_max32664, MODE_ONE);
+  // return max32664_config_bpm(&m_max32664, MODE_ONE);
 }
 
 base_status_t bsp_sh_get_sensor_value(uint8_t *spo2, uint8_t *heart_rate)

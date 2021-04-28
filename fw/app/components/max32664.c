@@ -224,7 +224,7 @@ static base_status_t m_max32664_read_byte(max32664_t *me,
                                      uint8_t cmd_index,
                                      uint8_t *status)
 {
-  CHECK(0 == me->i2c_write(me->device_address, cmd_family, &cmd_index, 1), BS_ERROR);
+  CHECK(0 == me->i2c_write(0xD0, cmd_family, &cmd_index, 1), BS_ERROR);
   me->delay(100);
   CHECK(0 == me->i2c_read(me->device_address, 0x00, status, 1), BS_ERROR);
 
