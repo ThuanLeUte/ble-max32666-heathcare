@@ -204,23 +204,23 @@ int main(void)
     printf("bsp_init\n");
     bsp_init();
 
-    bsp_temp_init();
-    float temp = 0;
+    // bsp_temp_init();
+    // float temp = 0;
 
-    // bsp_sh_init();
-    // uint8_t spo2 = 0;
-    // uint8_t heart_rate = 0;
+    bsp_sh_init();
+    uint8_t spo2 = 0;
+    uint8_t heart_rate = 0;
 
     while (1)
     {
-        bsp_temp_get(&temp);
-        printf("Temmperature: %f \n", (double)temp);
+        // bsp_temp_get(&temp);
+        // printf("Temmperature: %f \n", (double)temp);
 
         // bsp_sh_get_sensor_value(&spo2, &heart_rate);
         // printf("Spo2: %d \n", (uint8_t)spo2);
         // printf("Heart rate: %d \n", (uint8_t)heart_rate);
 
-        TMR_Delay(MXC_TMR0, MSEC(1000), 0);
+        bsp_delay(1000);
     }
 
 #ifdef ENABLE_SDMA

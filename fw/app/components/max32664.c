@@ -15,6 +15,7 @@
 
 /* Private defines ---------------------------------------------------- */
 #define MAXFAST_ARRAY_SIZE        (6)
+#define READ_DELAY                (10)
 
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
@@ -26,27 +27,23 @@ static base_status_t m_max32664_read(max32664_t *me,
                                      uint8_t cmd_family,
                                      uint8_t cmd_index,
                                      uint8_t *p_data,
-                                     uint32_t len,
-                                     uint8_t *status);
+                                     uint8_t len);
 
 static base_status_t m_max32664_read_byte(max32664_t *me,
                                           uint8_t cmd_family,
                                           uint8_t cmd_index,
-                                          uint8_t *status);
+                                          uint8_t *p_data);
 
-// static base_status_t m_max32664_write(max32664_t *me,
-//                                       uint8_t cmd_family,
-//                                       uint8_t cmd_index,
-//                                       uint8_t write_byte,
-//                                       uint8_t *p_data,
-//                                       uint8_t len,
-//                                       uint8_t status);
+static base_status_t m_max32664_write(max32664_t *me,
+                                      uint8_t cmd_family,
+                                      uint8_t cmd_index,
+                                      uint8_t *write_byte,
+                                      uint8_t len);
 
 static base_status_t m_max32664_write_byte(max32664_t *me,
                                            uint8_t cmd_family,
                                            uint8_t cmd_index,
-                                           uint8_t write_byte,
-                                           uint8_t *status);
+                                           uint8_t write_byte);
 
 /* Function definitions ----------------------------------------------- */
 base_status_t max32664_init(max32664_t *me)
@@ -59,46 +56,46 @@ base_status_t max32664_init(max32664_t *me)
   // Check device mode is application operating mode
   m_max32664_read_byte(me, READ_DEVICE_MODE, 0x00, &status);
 
+  printf("max32664_read_status: 0x%X\n", status);
+
   CHECK_STATUS(status);
+
+  max32664_read_status(me, &status);
+
+  return BS_OK;
+}
+
+base_status_t max32664_read_status(max32664_t *me, uint8_t *status)
+{
+  // Check device mode is application operating mode
+  m_max32664_read_byte(me, HUB_STATUS, 0x00, status);
+
+  printf("max32664_read_status: 0x%X\n", *status);
 
   return BS_OK;
 }
 
 base_status_t max32664_read_bpm(max32664_t *me)
 {
-  uint8_t status = 0;
+  uint8_t data[MAXFAST_ARRAY_SIZE + 1];
 
-  uint8_t data[MAXFAST_ARRAY_SIZE];
+  m_max32664_read(me, READ_DATA_OUTPUT, READ_DATA, data, MAXFAST_ARRAY_SIZE + 1);
 
-  m_max32664_read(me, READ_DATA_OUTPUT, READ_DATA, data, MAXFAST_ARRAY_SIZE, &status);
-
-  CHECK_STATUS(status);
-
-  // Hear Rate formatting
-  me->bio_data.heart_rate = ((uint16_t)(data[0]) << 8);
-  me->bio_data.heart_rate |= (data[1]);
+  // Heart Rate formatting
+  me->bio_data.heart_rate = ((uint16_t)(data[1]) << 8);
+  me->bio_data.heart_rate |= (data[2]);
   me->bio_data.heart_rate /= 10;
 
   // Confidence formatting
-  me->bio_data.confidence = data[2];
+  me->bio_data.confidence = data[3];
 
   // Blood oxygen formatting
-  me->bio_data.oxygen = ((uint16_t)(data[3]) << 8);
-  me->bio_data.oxygen |= (data[4]);
+  me->bio_data.oxygen = ((uint16_t)(data[4]) << 8);
+  me->bio_data.oxygen |= (data[5]);
   me->bio_data.oxygen /= 10;
 
   // Machine state - Has a finger been detected ?
-  me->bio_data.status = data[5];
-  return BS_OK;
-}
-
-base_status_t max32664_enable_max86140(max32664_t *me, bool sen_switch)
-{
-  uint8_t status;
-
-  CHECK_STATUS(m_max32664_write_byte(me, ENABLE_SENSOR, ENABLE_MAX86140, sen_switch, &status));
-
-  CHECK_STATUS(status);
+  me->bio_data.status = data[6];
 
   return BS_OK;
 }
@@ -106,16 +103,16 @@ base_status_t max32664_enable_max86140(max32664_t *me, bool sen_switch)
 base_status_t max32664_config_bpm(max32664_t *me, max32664_mode_t mode)
 {
   // Set output mode is just algorithm data
-  CHECK_STATUS(max32664_set_output_mode(me, ALGO_DATA));
+  CHECK_STATUS(max32664_set_output_mode(me, SENSOR_AND_ALGORITHM));
 
   // One sample before interrupt is fired
-  CHECK_STATUS(max32664_set_fifo_threshold(me, 0x01));
-
-  // Enable AGC algorithm
-  CHECK_STATUS(max32664_agc_algo_control(me, ENABLE));
+  CHECK_STATUS(max32664_set_fifo_threshold(me, 0x05));
 
   // Enable MAX86140 sensor
   CHECK_STATUS(max32664_enable_max86140(me, ENABLE));
+
+  // Enable AGC algorithm
+  CHECK_STATUS(max32664_agc_algo_control(me, ENABLE));
 
   // Enable fast 
   CHECK_STATUS(max32664_fast_algo_control(me, mode));
@@ -123,53 +120,49 @@ base_status_t max32664_config_bpm(max32664_t *me, max32664_mode_t mode)
   return BS_OK;
 }
 
-base_status_t max32664_fast_algo_control(max32664_t *me, max32664_mode_t mode)
+base_status_t max32664_enable_max86140(max32664_t *me, bool sen_switch)
 {
-  uint8_t status;
+  uint8_t buffer[2];
 
-  CHECK_STATUS(m_max32664_write_byte(me, ENABLE_ALGORITHM, ENABLE_WHRM_ALGO, mode, &status));
+  buffer[0] = sen_switch;
+  buffer[1] = 0x00;
 
-  CHECK_STATUS(status);
+  CHECK_STATUS(m_max32664_write(me, ENABLE_SENSOR, ENABLE_MAX86140, buffer, 1));
 
   return BS_OK;
 }
 
+base_status_t max32664_fast_algo_control(max32664_t *me, max32664_mode_t mode)
+{
+  CHECK_STATUS(m_max32664_write_byte(me, ENABLE_ALGORITHM, ENABLE_WHRM_ALGO, mode));
+
+  return BS_OK;
+}
 
 base_status_t max32664_set_output_mode(max32664_t *me, max32664_output_mode_t output_type)
 {
-  uint8_t status;
-
   if (output_type > SENSOR_ALGO_COUNTER)
     return BS_ERROR_PARAMS;
 
-  CHECK_STATUS(m_max32664_write_byte(me, OUTPUT_MODE, SET_FORMAT, output_type, &status));
-
-  CHECK_STATUS(status);
+  CHECK_STATUS(m_max32664_write_byte(me, OUTPUT_MODE, SET_FORMAT, output_type));
 
   return BS_OK;
 }
 
 base_status_t max32664_set_fifo_threshold(max32664_t *me, uint8_t threshold)
 {
-  uint8_t status;
-
-  CHECK_STATUS(m_max32664_write_byte(me, OUTPUT_MODE, WRITE_SET_THRESHOLD, threshold, &status));
-
-  CHECK_STATUS(status);
+  CHECK_STATUS(m_max32664_write_byte(me, OUTPUT_MODE, WRITE_SET_THRESHOLD, threshold));
 
   return BS_OK;
 }
 
 base_status_t max32664_agc_algo_control(max32664_t *me, bool enable)
 {
-  uint8_t status;
-
-  CHECK_STATUS(m_max32664_write_byte(me, ENABLE_ALGORITHM, ENABLE_AGC_ALGO, enable, &status));
-
-  CHECK_STATUS(status);
+  CHECK_STATUS(m_max32664_write_byte(me, ENABLE_ALGORITHM, ENABLE_AGC_ALGO, enable));
 
   return BS_OK;
 }
+
 /* Private function definitions ---------------------------------------- */
 /**
  * @brief         MAX32664 read
@@ -179,7 +172,6 @@ base_status_t max32664_agc_algo_control(max32664_t *me, bool enable)
  * @param[in]     cmd_index   Command index
  * @param[in]     p_data      Pointer to handle of data
  * @param[in]     len         Data length
- * @param[in]     status      Status
  *
  * @attention     None
  *
@@ -191,16 +183,17 @@ static base_status_t m_max32664_read(max32664_t *me,
                                      uint8_t cmd_family,
                                      uint8_t cmd_index,
                                      uint8_t *p_data,
-                                     uint32_t len,
-                                     uint8_t *status)
+                                     uint8_t len)
 {
   CHECK(0 == me->i2c_write(me->device_address, cmd_family, &cmd_index, 1), BS_ERROR);
-  me->delay(100);
-  CHECK(0 == me->i2c_read(me->device_address, 0x00, p_data, len + 1), BS_ERROR);
 
-  *status = p_data[0];
+  me->delay(READ_DELAY);
 
-  CHECK_STATUS(*status);
+  CHECK(0 == me->i2c_read(me->device_address, p_data, len + 1), BS_ERROR);
+
+  printf("m_max32664_read Error: %d\n", p_data[0]);
+
+  CHECK_STATUS(p_data[0]);
 
   return BS_OK;
 }
@@ -211,7 +204,6 @@ static base_status_t m_max32664_read(max32664_t *me,
  * @param[in]     me          Pointer to handle of MAX32664 module.
  * @param[in]     cmd_falily  Command family
  * @param[in]     cmd_index   Command index
- * @param[in]     status      Status
  * 
  * @attention     None
  *
@@ -222,13 +214,58 @@ static base_status_t m_max32664_read(max32664_t *me,
 static base_status_t m_max32664_read_byte(max32664_t *me,
                                      uint8_t cmd_family,
                                      uint8_t cmd_index,
-                                     uint8_t *status)
+                                     uint8_t *p_data)
 {
-  CHECK(0 == me->i2c_write(0xD0, cmd_family, &cmd_index, 1), BS_ERROR);
-  me->delay(100);
-  CHECK(0 == me->i2c_read(me->device_address, 0x00, status, 1), BS_ERROR);
+  uint8_t buffer[2];
 
-  CHECK_STATUS(*status);
+  CHECK(0 == me->i2c_write(me->device_address, cmd_family, &cmd_index, 1), BS_ERROR);
+
+  me->delay(READ_DELAY);
+
+  CHECK(0 == me->i2c_read(me->device_address, buffer, 2), BS_ERROR);
+
+  printf("m_max32664_read_byte Error: %d\n", buffer[0]);
+
+  CHECK_STATUS(buffer[0]);
+
+  *p_data = buffer[1];
+
+  return BS_OK;
+}
+
+/**
+ * @brief         MAX32664 write byte
+ *
+ * @param[in]     me          Pointer to handle of MAX32664 module.
+ * @param[in]     cmd_falily  Command family
+ * @param[in]     cmd_index   Command index
+ * @param[in]     write_byte  Write byte
+ *
+ * @attention     None
+ *
+ * @return
+ * - BS_OK
+ * - BS_ERROR
+ */
+static base_status_t m_max32664_write_byte(max32664_t *me,
+                                           uint8_t cmd_family,
+                                           uint8_t cmd_index,
+                                           uint8_t write_byte)
+{
+  uint8_t buffer[2];
+
+  buffer[0] = cmd_index;
+  buffer[1] = write_byte;
+
+  CHECK(0 == me->i2c_write(me->device_address, cmd_family, buffer, 2), BS_ERROR);
+
+  me->delay(READ_DELAY);
+
+  CHECK(0 == me->i2c_read(me->device_address, buffer, 1), BS_ERROR);
+
+  printf("m_max32664_write_byte Error: %d\n", buffer[0]);
+
+  // CHECK_STATUS(buffer[0]);
 
   return BS_OK;
 }
@@ -240,9 +277,6 @@ static base_status_t m_max32664_read_byte(max32664_t *me,
  * @param[in]     cmd_falily  Command family
  * @param[in]     cmd_index   Command index
  * @param[in]     write_byte  Write byte
- * @param[in]     p_data      Pointer to handle of data
- * @param[in]     len         Data length
- * @param[in]     status      Status
  *
  * @attention     None
  *
@@ -250,60 +284,29 @@ static base_status_t m_max32664_read_byte(max32664_t *me,
  * - BS_OK
  * - BS_ERROR
  */
-// static base_status_t m_max32664_write(max32664_t *me,
-//                                       uint8_t cmd_family,
-//                                       uint8_t cmd_index,
-//                                       uint8_t write_byte,
-//                                       uint8_t *p_data,
-//                                       uint8_t len,
-//                                       uint8_t *status)
-// {
-//   uint8_t buffer[50];
-
-//   buffer[0] = cmd_index;
-//   buffer[1] = write_byte;
-//   memcpy(&buffer[2], p_data, len);
-
-//   CHECK(0 == me->i2c_write(me->device_address, cmd_family, buffer, len + 2), BS_ERROR);
-//   me->delay(100);
-//   CHECK(0 == me->i2c_read(me->device_address, 0x00, status, 1), BS_ERROR);
-
-//   CHECK_STATUS(*status);
-
-//   return BS_OK;
-// }
-
-/**
- * @brief         MAX32664 write byte
- *
- * @param[in]     me          Pointer to handle of MAX32664 module.
- * @param[in]     cmd_falily  Command family
- * @param[in]     cmd_index   Command index
- * @param[in]     write_byte  Write byte
- * @param[in]     status      Status
- *
- * @attention     None
- *
- * @return
- * - BS_OK
- * - BS_ERROR
- */
-static base_status_t m_max32664_write_byte(max32664_t *me,
-                                           uint8_t cmd_family,
-                                           uint8_t cmd_index,
-                                           uint8_t write_byte,
-                                           uint8_t *status)
+static base_status_t m_max32664_write(max32664_t *me,
+                                      uint8_t cmd_family,
+                                      uint8_t cmd_index,
+                                      uint8_t *write_byte,
+                                      uint8_t len)
 {
-  uint8_t buffer[2];
+  uint8_t buffer[10];
 
   buffer[0] = cmd_index;
-  buffer[1] = write_byte;
+  memcpy(&buffer[1], write_byte, len);
 
-  CHECK(0 == me->i2c_write(me->device_address, cmd_family, buffer, 2), BS_ERROR);
-  me->delay(100);
-  CHECK(0 == me->i2c_read(me->device_address, 0x00, status, 1), BS_ERROR);
+  printf("m_max32664_write Error: 0x%2X, 0x%2X, 0x%2X, 0x%2X, 0x%2X\n", me->device_address, cmd_family, 
+                                          cmd_index, write_byte[0], write_byte[1]);
 
-  CHECK_STATUS(*status);
+  CHECK(0 == me->i2c_write(me->device_address, cmd_family, buffer, len + 1), BS_ERROR);
+
+  me->delay(READ_DELAY);
+
+  CHECK(0 == me->i2c_read(me->device_address, buffer, 1), BS_ERROR);
+
+  printf("m_max32664_write Error: %d\n", buffer[0]);
+
+  CHECK_STATUS(buffer[0]);
 
   return BS_OK;
 }

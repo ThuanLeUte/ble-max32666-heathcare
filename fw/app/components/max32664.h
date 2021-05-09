@@ -22,7 +22,7 @@ extern "C" {
 #include "bsp.h"
 
 /* Public defines ----------------------------------------------------- */
-#define MAX32664_I2C_ADDR                (0xD0)
+#define MAX32664_I2C_ADDR      (0x55 << 1)
 
 #define DISABLE                0x00
 #define ENABLE                 0x01
@@ -41,10 +41,10 @@ typedef struct
 {
   uint32_t ir_led;
   uint32_t red_led;
-  uint16_t heart_rate; // LSB = 0.1bpm
-  uint8_t  confidence; // 0-100% LSB = 1%
-  uint16_t oxygen; // 0-100% LSB = 1%
-  uint8_t  status; // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
+  uint16_t heart_rate;   // LSB = 0.1bpm
+  uint8_t  confidence;   // 0-100% LSB = 1%
+  uint16_t oxygen;       // 0-100% LSB = 1%
+  uint8_t  status;       // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
   float    r_value;      // -- Algorithm Mode 2 vv
   int8_t   ext_status;   // --
   uint8_t  reserve_one;  // --
@@ -62,12 +62,12 @@ typedef struct
   max32664_bio_data_t bio_data;
 
   // Read n-bytes from device's internal address <reg_addr> via I2C bus
-  base_status_t (*i2c_read) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
+  base_status_t (*i2c_read) (uint8_t slave_addr, uint8_t *data, uint32_t len);
 
   // Write n-bytes from device's internal address <reg_addr> via I2C bus
   base_status_t (*i2c_write) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
 
-  void (*delay) (uint16_t ms);
+  void (*delay) (uint32_t ms);
 }
 max32664_t;
 
@@ -187,11 +187,14 @@ max32664_output_mode_t;
 base_status_t max32664_init(max32664_t *me);
 base_status_t max32664_read_bpm(max32664_t *me);
 base_status_t max32664_config_bpm(max32664_t *me, max32664_mode_t mode);
+
 base_status_t max32664_fast_algo_control(max32664_t *me, max32664_mode_t mode);
-base_status_t max32664_control(max32664_t *me, bool sen_switch);
 base_status_t max32664_set_output_mode(max32664_t *me, max32664_output_mode_t output_type);
 base_status_t max32664_set_fifo_threshold(max32664_t *me, uint8_t threshold);
 base_status_t max32664_agc_algo_control(max32664_t *me, bool enable);
+base_status_t max32664_enable_max86140(max32664_t *me, bool sen_switch);
+
+base_status_t max32664_read_status(max32664_t *me, uint8_t *status);
 
 /* -------------------------------------------------------------------------- */
 #ifdef __cplusplus

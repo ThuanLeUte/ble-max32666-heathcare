@@ -12,6 +12,7 @@
 
 /* Includes ----------------------------------------------------------- */
 #include "bsp_sh.h"
+#include "bsp.h"
 
 /* Private defines ---------------------------------------------------- */
 /* Private enumerate/structure ---------------------------------------- */
@@ -27,10 +28,11 @@ base_status_t bsp_sh_init(void)
   m_max32664.device_address = MAX32664_I2C_ADDR;
   m_max32664.i2c_read       = bsp_i2c_read;
   m_max32664.i2c_write      = bsp_i2c_write;
+  m_max32664.delay          = bsp_delay;
 
   max32664_init(&m_max32664);
 
-  // return max32664_config_bpm(&m_max32664, MODE_ONE);
+  return max32664_config_bpm(&m_max32664, MODE_ONE);
 }
 
 base_status_t bsp_sh_get_sensor_value(uint8_t *spo2, uint8_t *heart_rate)

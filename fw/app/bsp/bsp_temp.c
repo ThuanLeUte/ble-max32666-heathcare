@@ -27,7 +27,7 @@ float m_max30208_calculate_temp(uint8_t msb, uint8_t lsb);
 base_status_t bsp_temp_init(void)
 {
   m_max30208.device_address = MAX30208_I2C_ADDR;
-  m_max30208.i2c_read       = bsp_i2c_read;
+  m_max30208.i2c_read       = bsp_i2c_read_mem;
   m_max30208.i2c_write      = bsp_i2c_write;
 
   max30208_init(&m_max30208);

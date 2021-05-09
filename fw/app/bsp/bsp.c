@@ -13,6 +13,7 @@
 /* Includes ----------------------------------------------------------- */
 #include "bsp.h"
 #include "i2c.h"
+#include "tmr_utils.h"
 
 /* Private defines ---------------------------------------------------- */
 #define I2C_MASTER    MXC_I2C0_BUS0
@@ -39,28 +40,9 @@ static void bsp_i2c_init(void)
   NVIC_EnableIRQ(I2C0_IRQn);
 }
 
-base_status_t bsp_i2c_read(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len)
+void bsp_delay(uint32_t ms)
 {
-  int ret;
-
-  printf("I2C reading at: 0X%X\n", reg_addr);
-
-  ret = I2C_MasterWrite(I2C_MASTER, slave_addr, &reg_addr, sizeof(reg_addr), 1);
-  if (ret != 1)
-  {
-    //printf("Error reading: %d\n", ret);
-    return BS_ERROR;
-  }
-
-  ret = I2C_MasterRead(I2C_MASTER, slave_addr, data, len, 0);
-  if (ret != len)
-  {
-    printf("Error reading: %d\n", ret);
-    return BS_ERROR;
-  }
-
-  printf("I2C reading: %d\n", ret);
-  return BS_OK;
+  TMR_Delay(MXC_TMR0, MSEC(ms), 0);;
 }
 
 base_status_t bsp_i2c_write(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len)
@@ -68,7 +50,7 @@ base_status_t bsp_i2c_write(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data,
   int ret;
   uint8_t buff[50];
 
-  printf("I2C writing at: 0X%X\n", reg_addr);
+  printf("I2C writing at: 0x%X\n", reg_addr);
 
   buff[0] = reg_addr;
   memcpy(&buff[1], data, len);
@@ -83,11 +65,52 @@ base_status_t bsp_i2c_write(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data,
   return BS_OK;
 }
 
+base_status_t bsp_i2c_read(uint8_t slave_addr, uint8_t *data, uint32_t len)
+{
+  int ret;
+
+  printf("I2C reading\n");
+
+  ret = I2C_MasterRead(I2C_MASTER, slave_addr, data, len, 0);
+  if (ret != len)
+  {
+    printf("Error reading: %d\n", ret);
+    return BS_ERROR;
+  }
+
+  printf("I2C reading: %d\n", ret);
+  return BS_OK;
+}
+
+base_status_t bsp_i2c_read_mem(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len)
+{
+  int ret;
+
+  printf("I2C reading at: 0x%X\n", reg_addr);
+
+  ret = I2C_MasterWrite(I2C_MASTER, slave_addr, &reg_addr, sizeof(reg_addr), 1);
+  if (ret != 1)
+  {
+    printf("Error reading: %d\n", ret);
+    return BS_ERROR;
+  }
+
+  ret = I2C_MasterRead(I2C_MASTER, slave_addr, data, len, 0);
+  if (ret != len)
+  {
+    printf("Error reading: %d\n", ret);
+    return BS_ERROR;
+  }
+
+  printf("I2C reading: %d\n", ret);
+  return BS_OK;
+}
+
 /* Private function definitions --------------------------------------- */
 void I2C0_IRQHandler(void)
 {
-    I2C_Handler(I2C_MASTER);
-    return;
+  I2C_Handler(I2C_MASTER);
+  return;
 }
 
 /* End of file -------------------------------------------------------- */
