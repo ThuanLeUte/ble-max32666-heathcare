@@ -2,7 +2,7 @@
 /*!
  *  \file
  *
- *  \brief  Stack initialization for dats.
+ *  \brief  Stack initialization for fit.
  *
  *  Copyright (c) 2016-2017 ARM Ltd. All Rights Reserved.
  *  ARM Ltd. confidential and proprietary.
@@ -19,12 +19,10 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "mxc_device.h"
 #include "wsf_types.h"
 #include "wsf_os.h"
 #include "util/bstream.h"
-#include "dats/dats_api.h"
-#include "wdxs/wdxs_api.h"
+#include "fit/fit_api.h"
 #include "hci_handler.h"
 #include "dm_handler.h"
 #include "l2c_handler.h"
@@ -37,17 +35,21 @@
 #include "svc_dis.h"
 #include "svc_core.h"
 #include "sec_api.h"
-#include "gcr_regs.h"
 #include "ll_init_api.h"
 #include "hci_drv_sdma.h"
 
+#ifdef _RTE_
+#include "RTE_Components.h"             // Component selection
+#endif
+
+
 #define LL_IMPL_REV             0x2303
 
-#define LL_MEMORY_FOOTPRINT     0xc152
+#define LL_MEMORY_FOOTPRINT     0xC152
 
 uint8_t LlMem[LL_MEMORY_FOOTPRINT];
 
-LlRtCfg_t _ll_cfg = {
+const LlRtCfg_t _ll_cfg = {
     /* Device */
     /*compId*/                  LL_COMP_ID_ARM,
     /*implRev*/                 LL_IMPL_REV,
@@ -90,7 +92,11 @@ LlRtCfg_t _ll_cfg = {
 
     /* PHY */
     /*phy2mSup*/                TRUE,
+#ifdef ENABLE_SDMA
     /*phyCodedSup*/             FALSE,
+#else /* ENABLE_SDMA */
+    /*phyCodedSup*/             TRUE,
+#endif /* ENABLE_SDMA */
     /*stableModIdxTxSup*/       FALSE,
     /*stableModIdxRxSup*/       FALSE
 };
@@ -110,17 +116,12 @@ const BbRtCfg_t _bb_cfg = {
  *  \return     None.
  */
 /*************************************************************************************************/
-void StackInitDats(void)
+void StackInitFit(void)
 {
   wsfHandlerId_t handlerId;
 
 #ifndef ENABLE_SDMA
   uint32_t memUsed;
-
-  /* Enable coded PHY */
-  if(MXC_GCR->revision != 0xA1) {
-    _ll_cfg.phyCodedSup = TRUE;
-  }
 
   /* Initialize link layer. */
   LlInitRtCfg_t ll_init_cfg =
@@ -134,18 +135,24 @@ void StackInitDats(void)
       .freeMemAvail = LL_MEMORY_FOOTPRINT
   };
 
+#ifdef DATS_APP_USE_LEGACY_API
   memUsed = LlInitControllerExtInit(&ll_init_cfg);
+#else /* DATS_APP_USE_LEGACY_API */
+  memUsed = LlInitControllerExtInit(&ll_init_cfg);
+#endif /* DATS_APP_USE_LEGACY_API */
   if(memUsed != LL_MEMORY_FOOTPRINT)
   {
-    printf("mem_used: 0x%x LL_MEMORY_FOOTPRINT: 0x%x\n", memUsed, 
-        LL_MEMORY_FOOTPRINT);
+      printf("Controller memory mismatch 0x%x != 0x%x\n", memUsed, 
+          LL_MEMORY_FOOTPRINT);
   }
 #endif /* ENABLE_SDMA */
 
 #ifdef ENABLE_SDMA
-  /* Copy link layer configuration to sdma memory space. */
-  SDMASetBBCfg(&_bb_cfg);
-  SDMASetLLCfg(&_ll_cfg);
+#ifdef ENABLE_SDMA_UNIFIED_CONFIG
+    /* Copy link layer configuration to sdma memory space. */
+    SDMASetBBCfg(&_bb_cfg);
+    SDMASetLLCfg(&_ll_cfg);
+#endif /* ENABLE_SDMA_UNIFIED_CONFIG */
 #endif /* ENABLE_SDMA */
 
   handlerId = WsfOsSetNextHandler(HciHandler);
@@ -158,18 +165,13 @@ void StackInitDats(void)
 
   handlerId = WsfOsSetNextHandler(DmHandler);
   DmDevVsInit(0);
-#ifdef BTLE_APP_USE_LEGACY_API
   DmAdvInit();
   DmConnInit();
   DmConnSlaveInit();
-#else /* BTLE_APP_USE_LEGACY_API */
-  DmExtAdvInit();
-  DmConnInit();
-  DmExtConnSlaveInit();
-#endif /* BTLE_APP_USE_LEGACY_API */
   DmSecInit();
   DmSecLescInit();
   DmPrivInit();
+  DmPhyInit();
   DmHandlerInit(handlerId);
 
   handlerId = WsfOsSetNextHandler(L2cSlaveHandler);
@@ -186,17 +188,11 @@ void StackInitDats(void)
   SmpHandlerInit(handlerId);
   SmprInit();
   SmprScInit();
-  HciSetMaxRxAclLen(256);
+  HciSetMaxRxAclLen(100);
 
   handlerId = WsfOsSetNextHandler(AppHandler);
   AppHandlerInit(handlerId);
 
-  handlerId = WsfOsSetNextHandler(DatsHandler);
-  DatsHandlerInit(handlerId);
-
-#if WDXS_INCLUDED == TRUE
-  handlerId = WsfOsSetNextHandler(WdxsHandler);
-  WdxsHandlerInit(handlerId);
-#endif
-  
+  handlerId = WsfOsSetNextHandler(FitHandler);
+  FitHandlerInit(handlerId);
 }

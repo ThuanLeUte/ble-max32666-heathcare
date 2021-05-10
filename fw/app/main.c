@@ -44,7 +44,7 @@
 #include "wsf_timer.h"
 #include "wsf_trace.h"
 #include "app_ui.h"
-#include "dats/dats_api.h"
+#include "fit/fit_api.h"
 #include "app_ui.h"
 #include "hci_vs.h"
 #include "hci_core.h"
@@ -98,7 +98,7 @@ extern bool_t resetFlag;
 **************************************************************************************************/
 
 /*! \brief  Stack initialization for app. */
-extern void StackInitDats(void);
+extern void StackInitFit(void);
 
 /*************************************************************************************************/
 void SysTick_Handler(void)
@@ -193,8 +193,11 @@ int main(void)
 
     /* Initialize Radio */
     WsfInit();
-    StackInitDats();
-    DatsStart();
+    // StackInitDats();
+    // DatsStart();
+
+    StackInitFit();
+    FitStart();
 
     /* Register a handler for Application events */
     AppUiActionRegister(SetAddress);
@@ -202,26 +205,26 @@ int main(void)
     printf("Setup Complete\n");
 
     printf("bsp_init\n");
-    bsp_init();
+//    bsp_init();
 
     // bsp_temp_init();
     // float temp = 0;
 
-    bsp_sh_init();
-    uint8_t spo2 = 0;
-    uint8_t heart_rate = 0;
+    // bsp_sh_init();
+    // uint8_t spo2 = 0;
+    // uint8_t heart_rate = 0;
 
-    while (1)
-    {
-        // bsp_temp_get(&temp);
-        // printf("Temmperature: %f \n", (double)temp);
+    // while (1)
+    // {
+    //     // bsp_temp_get(&temp);
+    //     // printf("Temmperature: %f \n", (double)temp);
 
-        // bsp_sh_get_sensor_value(&spo2, &heart_rate);
-        // printf("Spo2: %d \n", (uint8_t)spo2);
-        // printf("Heart rate: %d \n", (uint8_t)heart_rate);
+    //     // bsp_sh_get_sensor_value(&spo2, &heart_rate);
+    //     // printf("Spo2: %d \n", (uint8_t)spo2);
+    //     // printf("Heart rate: %d \n", (uint8_t)heart_rate);
 
-        bsp_delay(1000);
-    }
+    //     bsp_delay(1000);
+    // }
 
 #ifdef ENABLE_SDMA
     sdmaFlag = SDMA_FLAG_INIT;
@@ -239,17 +242,6 @@ int main(void)
             while(1);
       }
 #endif /* ENABLE_SDMA */
-
-        if(resetFlag && wsfOsReadyToSleep() && (Console_PrepForSleep() == E_NO_ERROR)) {
-            /* Prevent interrupts from pre-empting this operation */
-            __disable_irq();
-
-            /* Power down the BLE hardware */
-            BbDrvDisable();
-
-            /* Reset and let bootloader run the new image */
-            NVIC_SystemReset();
-        }
     }
 }
 

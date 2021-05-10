@@ -86,8 +86,11 @@ CMSIS_ROOT=$(LIBS_DIR)/CMSIS
 
 # Source files for this test (add path to VPATH below)
 SRCS  = main.c
-SRCS += stack_dats.c
-SRCS += dats_main.c
+# SRCS += stack_dats.c
+# SRCS += dats_main.c
+
+SRCS += stack_fit.c
+SRCS += fit_main.c
 
 SRCS += bsp.c
 SRCS += bsp_temp.c
