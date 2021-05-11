@@ -44,6 +44,9 @@
 #include "fit/fit_api.h"
 #include "util/calc128.h"
 
+#include "ble_bas.h"
+#include "ble_bos.h"
+
 /**************************************************************************************************
   Macros
 **************************************************************************************************/
@@ -757,7 +760,7 @@ void FitHandler(wsfEventMask_t event, wsfMsgHdr_t *pMsg)
  *  \return None.
  */
 /*************************************************************************************************/
-void FitStart(void)
+void ble_start(void)
 {
   /* Register for stack callbacks */
   DmRegister(fitDmCback);
@@ -771,12 +774,9 @@ void FitStart(void)
 
   /* Initialize attribute server database */
   SvcCoreAddGroup();
-  SvcHrsCbackRegister(NULL, HrpsWriteCback);
-  SvcHrsAddGroup();
-  SvcDisAddGroup();
-  SvcBattCbackRegister(BasReadCback, NULL);
-  SvcBattAddGroup();
-  SvcRscsAddGroup();
+
+  ble_bos_init();
+  ble_bas_init();
 
   /* Set running speed and cadence features */
   RscpsSetFeatures(RSCS_ALL_FEATURES);

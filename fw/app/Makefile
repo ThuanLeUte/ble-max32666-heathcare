@@ -80,23 +80,28 @@ ifeq "$(MAXIM_PATH)" ""
 else
 # LIBS_DIR=/$(subst \,/,$(subst :,,$(MAXIM_PATH))/Firmware/$(TARGET_UC)/Libraries)
 endif
+
 LIBS_DIR=../../fw/Libraries
 NDALIBS_DIR=../../fw/NDALibraries
 CMSIS_ROOT=$(LIBS_DIR)/CMSIS
 
 # Source files for this test (add path to VPATH below)
 SRCS  = main.c
-# SRCS += stack_dats.c
-# SRCS += dats_main.c
 
-SRCS += stack_fit.c
-SRCS += fit_main.c
-
+# Board Support Package
 SRCS += bsp.c
 SRCS += bsp_temp.c
 SRCS += bsp_sh.c
+
+# Chip driver
 SRCS += max30208.c
 SRCS += max32664.c
+
+# BLE handle
+SRCS += ble_stack.c
+SRCS += ble_main.c
+
+# BLE services
 SRCS += ble_bos.c
 SRCS += ble_bas.c
 
