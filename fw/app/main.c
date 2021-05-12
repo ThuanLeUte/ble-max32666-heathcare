@@ -44,7 +44,6 @@
 #include "wsf_timer.h"
 #include "wsf_trace.h"
 #include "app_ui.h"
-#include "fit/fit_api.h"
 #include "app_ui.h"
 #include "hci_vs.h"
 #include "hci_core.h"
@@ -57,6 +56,7 @@
 #include "bsp.h"
 #include "bsp_temp.h"
 #include "bsp_sh.h"
+#include "ble_main.h"
 
 /**************************************************************************************************
   Macros
@@ -183,18 +183,17 @@ int main(void)
 {
   printf("\n\n***** MAX32665 BLE Data Server *****\n");
 
-  /* Initialize Radio */
+  // Initialize Radio
   WsfInit();
 
   ble_stack_init();
-  FitStart();
+  ble_start();
 
-  /* Register a handler for Application events */
+  // Register a handler for Application events
   AppUiActionRegister(SetAddress);
 
   printf("Setup Complete\n");
 
-  printf("bsp_init\n");
   bsp_init();
   bsp_temp_init();
   float temp = 0;

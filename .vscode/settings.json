@@ -7,6 +7,9 @@
         "svc_cfg.h": "c",
         "svc_wp.h": "c",
         "max30208.h": "c",
-        "fit_api.h": "c"
+        "fit_api.h": "c",
+        "svc_batt.h": "c",
+        "bas_api.h": "c",
+        "bas_app.h": "c"
     }
 }

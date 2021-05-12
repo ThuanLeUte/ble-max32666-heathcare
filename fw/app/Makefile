@@ -105,12 +105,16 @@ SRCS += ble_main.c
 SRCS += ble_bos.c
 SRCS += ble_bas.c
 
+# BLE services application
+SRCS += bas_app.c
+
 # Where to find source files for this test
 VPATH  = .
 VPATH  += sys
 VPATH  += components
 VPATH  += bsp
 VPATH  += ble_services
+VPATH  += ble_app
 
 # Where to find header files for this test
 IPATH  = .
@@ -118,6 +122,7 @@ IPATH  += sys
 IPATH  += components
 IPATH  += bsp
 IPATH  += ble_services
+IPATH  += ble_app
 
 ##############################################################################
 # OS Check/Utility definitions
