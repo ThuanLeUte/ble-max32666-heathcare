@@ -18,7 +18,7 @@
 #include "att_api.h"
 
 /* Public defines ----------------------------------------------------- */
-#define BOS_START_HDL   0x60               /*!< Service start handle. */
+#define BOS_START_HDL   0x20               /*!< Service start handle. */
 #define BOS_END_HDL     (BOS_MAX_HDL - 1)  /*!< Service end handle. */
 
 /* Public enumerate/structure ----------------------------------------- */
@@ -59,17 +59,6 @@ void ble_bos_init();
  * @return        None
  */
 void ble_bos_callback_register(attsReadCback_t read_cb, attsWriteCback_t write_cb);
-
-/**
- * @brief         Function for updating the blood oxygen level.
- *
- * @param[in]     value   New blood oxygen measurement value
- * 
- * @attention     None
- *
- * @return        None
- */
-void ble_bos_blood_oxygen_update(uint8_t value);
 
 #endif // __BLE_BOS_H
 

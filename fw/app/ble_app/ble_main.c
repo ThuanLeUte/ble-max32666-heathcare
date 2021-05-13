@@ -2,7 +2,7 @@
 /*!
  *  \file
  *
- *  \brief  Fitness sample application for the following profiles:
+ *  \brief  BLEness sample application for the following profiles:
  *            Heart Rate profile
  *
  *  Copyright (c) 2011-2018 Arm Ltd. All Rights Reserved.
@@ -47,6 +47,7 @@
 #include "ble_bas.h"
 #include "ble_bos.h"
 #include "bas_app.h"
+#include "stdio.h"
 
 /**************************************************************************************************
   Macros
@@ -58,9 +59,9 @@
 // WSF message event enumeration
 enum
 {
-  FIT_HR_TIMER_IND = BLE_MSG_START,       /*! Heart rate measurement timer expired */
-  FIT_BATT_TIMER_IND,                     /*! Battery measurement timer expired */
-  FIT_RUNNING_TIMER_IND                   /*! Running speed and cadence measurement timer expired */
+  BLE_BATT_TIMER_IND = BLE_MSG_START,   // Battery measurement timer expired
+  BLE_TEMPERARUE_TIMER_IND,             // Temperature measurement timer expired
+  BLE_SENSOR_HUB_TIMER_IND              // Sensor Hub measurement timer expired
 };
 
 /**************************************************************************************************
@@ -123,9 +124,7 @@ static const appUpdateCfg_t m_ble_update_cfg =
 // Battery measurement configuration
 static const bas_app_cfg_t m_ble_bas_cfg =
 {
-  30,                          // Battery measurement timer expiration period in seconds
-  1,                           // Perform battery measurement after this many timer periods
-  100                          // Send battery level notification to peer when below this level
+  3,                          // Battery measurement timer expiration period in seconds
 };
 
 // SMP security parameter configuration
@@ -184,21 +183,21 @@ static const uint8_t m_ble_scan_data_disc[] =
 /*! enumeration of client characteristic configuration descriptors */
 enum
 {
-  FIT_GATT_SC_CCC_IDX,  /*! GATT service, service changed characteristic */
-  FIT_HRS_HRM_CCC_IDX,  /*! Heart rate service, heart rate monitor characteristic */
-  FIT_BATT_LVL_CCC_IDX, /*! Battery service, battery level characteristic */
-  FIT_RSCS_SM_CCC_IDX,  /*! Runninc speed and cadence measurement characteristic */
-  FIT_NUM_CCC_IDX
+  BLE_GATT_SC_CCC_IDX,      // GATT service, service changed characteristic
+  BLE_BATT_LVL_CCC_IDX,     // Battery service, battery level characteristic
+  BLE_TEMP_CCC_IDX,         // Temperature service, temperature monitor characteristic
+  BLE_SENSOR_HUB_CCC_IDX,   // Sensor hub service, spo2 monitor characteristic
+  BLE_NUM_CCC_IDX
 };
 
 // Client characteristic configuration descriptors settings, indexed by above enumeration
-static const attsCccSet_t m_ble_ccc_set[FIT_NUM_CCC_IDX] =
+static const attsCccSet_t m_ble_ccc_set[BLE_NUM_CCC_IDX] =
 {
   /* cccd handle          value range               security level */
-  {GATT_SC_CH_CCC_HDL,    ATT_CLIENT_CFG_INDICATE,  DM_SEC_LEVEL_NONE},   /* FIT_GATT_SC_CCC_IDX */
-  {HRS_HRM_CH_CCC_HDL,    ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   /* FIT_HRS_HRM_CCC_IDX */
-  {BATT_LVL_CH_CCC_HDL,   ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   /* FIT_BATT_LVL_CCC_IDX */
-  {RSCS_RSM_CH_CCC_HDL,   ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE}    /* FIT_RSCS_SM_CCC_IDX */
+  {GATT_SC_CH_CCC_HDL,    ATT_CLIENT_CFG_INDICATE,  DM_SEC_LEVEL_NONE},   // BLE_GATT_SC_CCC_IDX
+  {BATT_LVL_CH_CCC_HDL,   ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   // BLE_BATT_LVL_CCC_IDX
+  {HRS_HRM_CH_CCC_HDL,    ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   // BLE_TEMP_CCC_IDX
+  {RSCS_RSM_CH_CCC_HDL,   ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE}    // BLE_SENSOR_HUB_CCC_IDX
 };
 
 /**************************************************************************************************
@@ -209,7 +208,7 @@ static const attsCccSet_t m_ble_ccc_set[FIT_NUM_CCC_IDX] =
 static wsfHandlerId_t m_ble_handler_id;
 
 // LESC OOB configuration
-static dmSecLescOobCfg_t *fit_oob_cfg;
+static dmSecLescOobCfg_t *BLE_oob_cfg;
 
 /* Private function prototypes ---------------------------------------- */
 static void m_ble_dm_cb(dmEvt_t *p_dm_evt);
@@ -223,7 +222,7 @@ static void m_ble_process_msg(ble_msg_t *p_msg);
 /* Function definitions ----------------------------------------------- */
 void ble_handler_init(wsfHandlerId_t handler_id)
 {
-  APP_TRACE_INFO0("ble_handler_inti");
+  printf("ble_handler_init \n");
 
   // Store handler ID
   m_ble_handler_id = handler_id;
@@ -250,7 +249,7 @@ void ble_handler(wsfEventMask_t event, wsfMsgHdr_t *p_msg)
 {
   if (p_msg != NULL)
   {
-    APP_TRACE_INFO1("Fit got evt %d", p_msg->event);
+    printf("BLE got evt %d \n", p_msg->event);
 
     if (p_msg->event >= DM_CBACK_START && p_msg->event <= DM_CBACK_END)
     {
@@ -273,15 +272,17 @@ void ble_start(void)
   DmConnRegister(DM_CLIENT_ID_APP, m_ble_dm_cb);
   AttRegister(m_ble_att_cb);
   AttConnRegister(AppServerConnCback);
-  AttsCccRegister(FIT_NUM_CCC_IDX, (attsCccSet_t *) m_ble_ccc_set, m_ble_ccc_cb);
+  AttsCccRegister(BLE_NUM_CCC_IDX, (attsCccSet_t *) m_ble_ccc_set, m_ble_ccc_cb);
 
   // Initialize attribute server database
   SvcCoreAddGroup();
 
   // User service add
   ble_bos_init();
-  ble_bas_callback_register(bas_app_read_cb, NULL);
-  ble_bas_init();
+  // SvcHrsAddGroup();
+  // ble_bas_callback_register(bas_app_read_cb, NULL);
+  // ble_bas_init();
+  SvcBattAddGroup();
 
   // Reset the device
   DmDevReset();
@@ -316,15 +317,15 @@ static void m_ble_dm_cb(dmEvt_t *p_dm_evt)
   }
   else if (p_dm_evt->hdr.event == DM_SEC_CALC_OOB_IND)
   {
-    if (fit_oob_cfg == NULL)
+    if (BLE_oob_cfg == NULL)
     {
-      fit_oob_cfg = WsfBufAlloc(sizeof(dmSecLescOobCfg_t));
+      BLE_oob_cfg = WsfBufAlloc(sizeof(dmSecLescOobCfg_t));
     }
 
-    if (fit_oob_cfg)
+    if (BLE_oob_cfg)
     {
-      Calc128Cpy(fit_oob_cfg->localConfirm, p_dm_evt->oobCalcInd.confirm);
-      Calc128Cpy(fit_oob_cfg->localRandom, p_dm_evt->oobCalcInd.random);
+      Calc128Cpy(BLE_oob_cfg->localConfirm, p_dm_evt->oobCalcInd.confirm);
+      Calc128Cpy(BLE_oob_cfg->localRandom, p_dm_evt->oobCalcInd.random);
     }
   }
   else
@@ -443,18 +444,20 @@ static void m_ble_setup(ble_msg_t *p_msg)
  */
 static void m_ble_process_ccc_state(ble_msg_t *p_msg)
 {
-  APP_TRACE_INFO3("ccc state ind value:%d handle:%d idx:%d", p_msg->ccc.value, p_msg->ccc.handle, p_msg->ccc.idx);
+  printf("ccc state ind value: %d, handle: %d, idx: %d \n", p_msg->ccc.value, p_msg->ccc.handle, p_msg->ccc.idx);
 
   // Handle battery level CCC
-  if (p_msg->ccc.idx == FIT_BATT_LVL_CCC_IDX)
+  if (p_msg->ccc.idx == BLE_BATT_LVL_CCC_IDX)
   {
     if (p_msg->ccc.value == ATT_CLIENT_CFG_NOTIFY)
     {
-      bas_app_measure_start((dmConnId_t) p_msg->ccc.hdr.param, FIT_BATT_TIMER_IND, FIT_BATT_LVL_CCC_IDX);
+      bas_app_measure_start((dmConnId_t) p_msg->ccc.hdr.param, BLE_BATT_TIMER_IND, BLE_BATT_LVL_CCC_IDX);
+      printf("bas_app_measure_start\n");
     }
     else
     {
       bas_app_measure_stop((dmConnId_t) p_msg->ccc.hdr.param);
+      printf("bas_app_measure_stop\n");
     }
     return;
   }
@@ -473,16 +476,19 @@ static void m_ble_process_msg(ble_msg_t *p_msg)
 {
   uint8_t uiEvent = APP_UI_NONE;
 
+  printf("BLE process message, event: %d \n", p_msg->hdr.event);
+
   switch(p_msg->hdr.event)
   {
-    case FIT_RUNNING_TIMER_IND:
+    case BLE_SENSOR_HUB_TIMER_IND:
+      printf("BLE_SENSOR_HUB_TIMER_IND\n");
       break;
 
-    case FIT_HR_TIMER_IND:
-      HrpsProcMsg(&p_msg->hdr);
+    case BLE_TEMPERARUE_TIMER_IND:
+      printf("BLE_TEMPERARUE_TIMER_IND\n");
       break;
 
-    case FIT_BATT_TIMER_IND:
+    case BLE_BATT_TIMER_IND:
       bas_app_process_msg(&p_msg->hdr);
       break;
 
@@ -492,30 +498,35 @@ static void m_ble_process_msg(ble_msg_t *p_msg)
       break;
 
     case ATTS_CCC_STATE_IND:
+      printf("ATTS_CCC_STATE_IND\n");
       m_ble_process_ccc_state(p_msg);
       break;
 
     case DM_RESET_CMPL_IND:
+      printf("DM_RESET_CMPL_IND\n");
       DmSecGenerateEccKeyReq();
       m_ble_setup(p_msg);
       uiEvent = APP_UI_RESET_CMPL;
       break;
 
     case DM_ADV_START_IND:
+      printf("DM_ADV_START_IND\n");
       uiEvent = APP_UI_ADV_START;
       break;
 
     case DM_ADV_STOP_IND:
+      printf("DM_ADV_STOP_IND\n");
       uiEvent = APP_UI_ADV_STOP;
       break;
 
     case DM_CONN_OPEN_IND:
-      HrpsProcMsg(&p_msg->hdr);
+      printf("DM_CONN_OPEN_IND\n");
       bas_app_process_msg(&p_msg->hdr);
       uiEvent = APP_UI_CONN_OPEN;
       break;
 
     case DM_CONN_CLOSE_IND:
+      printf("DM_CONN_CLOSE_IND\n");
       m_ble_close(p_msg);
       uiEvent = APP_UI_CONN_CLOSE;
       break;

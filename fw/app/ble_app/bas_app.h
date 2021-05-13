@@ -30,8 +30,6 @@ extern "C" {
 typedef struct
 {
   wsfTimerTicks_t period;     // Battery measurement timer expiration period in seconds
-  uint16_t        count;      // Perform battery measurement after this many timer periods
-  uint8_t         threshold;  // Send battery level notification to peer when below this level
 }
 bas_app_cfg_t;
 

@@ -117,10 +117,5 @@ void ble_bas_callback_register(attsReadCback_t read_cb, attsWriteCback_t write_c
   m_bas_group.writeCback = write_cb;
 }
 
-void ble_bas_blood_oxygen_update(uint8_t value)
-{
-  AttsHandleValueNtf(1, BAS_LVL_HDL, 1, &value);
-}
-
 /* Private function definitions --------------------------------------- */
 /* End of file -------------------------------------------------------- */

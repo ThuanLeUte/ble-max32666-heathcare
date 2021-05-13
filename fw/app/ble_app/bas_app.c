@@ -23,6 +23,7 @@
 
 #include "ble_bas.h"
 #include "bas_app.h"
+#include "stdio.h"
 
 /* Private defines ---------------------------------------------------- */
 // Battery level initialization value
@@ -79,7 +80,6 @@ void bas_app_measure_start(dmConnId_t conn_id, uint8_t timer_evt, uint8_t batt_c
     bas_cb.meas_timer.msg.event  = timer_evt;
     bas_cb.meas_timer.msg.status = batt_ccc_idx;
     bas_cb.batt_level            = BAS_BATT_LEVEL_INIT;
-    bas_cb.curr_count            = bas_cb.cfg.count;
 
     // Start timer
     WsfTimerStartSec(&bas_cb.meas_timer, bas_cb.cfg.period);
@@ -116,6 +116,7 @@ void bas_app_process_msg(wsfMsgHdr_t *p_msg)
   }
   else if (p_msg->event == bas_cb.meas_timer.msg.event)
   {
+    printf("m_bas_meas_time_exp\n");
     m_bas_meas_time_exp(p_msg);
   }
 }
@@ -147,31 +148,29 @@ static void m_bas_meas_time_exp(wsfMsgHdr_t *p_msg)
   // If there are active connections
   if (m_bas_no_conn_active() == FALSE)
   {
-    if (--bas_cb.curr_count == 0)
+    printf("m_bas_no_conn_active\n");
+
+    // Set up battery measurement to be sent on all connections
+    m_bas_setup_to_send();
+
+    // Read battery measurement sensor data
+    AppHwBattRead(&bas_cb.batt_level);
+
+    // If ready to send measurements
+    if (bas_cb.tx_ready)
     {
-      // Reset count
-      bas_cb.curr_count = bas_cb.cfg.count;
-
-      // Set up battery measurement to be sent on all connections
-      m_bas_setup_to_send();
-
-      // Read battery measurement sensor data
-      AppHwBattRead(&bas_cb.batt_level);
-
-      // If ready to send measurements
-      if (bas_cb.tx_ready)
+      // Find next connection to send (note ccc idx is stored in timer status)
+      if ((p_conn = m_bas_find_next_to_send(p_msg->status)) != NULL)
       {
-        // Find next connection to send (note ccc idx is stored in timer status)
-        if ((p_conn = m_bas_find_next_to_send(p_msg->status)) != NULL)
-        {
-          m_bat_send_periodic_batt_level(p_conn);
-        }
+        printf("m_bas_find_next_to_send\n");
+
+        m_bat_send_periodic_batt_level(p_conn);
       }
     }
-
-    // Restart timer
-    WsfTimerStartSec(&bas_cb.meas_timer, bas_cb.cfg.period);
   }
+
+  // Restart timer
+  WsfTimerStartSec(&bas_cb.meas_timer, bas_cb.cfg.period);
 }
 
 /**
@@ -187,8 +186,11 @@ static void m_bas_meas_time_exp(wsfMsgHdr_t *p_msg)
  */
 static void bas_app_send_batt_level(dmConnId_t conn_id, uint8_t idx, uint8_t level)
 {
+  printf("bas_app_send_batt_level\n", conn_id);
+
   if (AttsCccEnabled(conn_id, idx))
   {
+    printf("conn_id: %d\n", conn_id);
     AttsHandleValueNtf(conn_id, BAS_LVL_HDL, CH_BATT_LEVEL_LEN, &level);
   }
 }
@@ -256,8 +258,8 @@ static bas_app_conn_t *m_bas_find_next_to_send(uint8_t ccc_idx)
 
   for (i = 0; i < DM_CONN_MAX; i++, p_conn++)
   {
-    if (p_conn->conn_id != DM_CONN_ID_NONE && p_conn->batt_to_send &&
-        p_conn->sent_batt_level != bas_cb.batt_level)
+    if (p_conn->conn_id != DM_CONN_ID_NONE && p_conn->batt_to_send)
+        // p_conn->sent_batt_level != bas_cb.batt_level)
     {
       if (AttsCccEnabled(p_conn->conn_id, ccc_idx))
       {
@@ -280,9 +282,11 @@ static bas_app_conn_t *m_bas_find_next_to_send(uint8_t ccc_idx)
 static void m_bat_send_periodic_batt_level(bas_app_conn_t *p_conn)
 {
   bas_app_send_batt_level(p_conn->conn_id, bas_cb.meas_timer.msg.status, bas_cb.batt_level);
+
+  // Set value to default
   p_conn->sent_batt_level = bas_cb.batt_level;
-  p_conn->batt_to_send = FALSE;
-  bas_cb.tx_ready = FALSE;
+  p_conn->batt_to_send    = FALSE;
+  bas_cb.tx_ready         = FALSE;
 }
 
 /**

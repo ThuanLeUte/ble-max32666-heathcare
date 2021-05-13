@@ -60,17 +60,6 @@ void ble_bas_init();
  */
 void ble_bas_callback_register(attsReadCback_t read_cb, attsWriteCback_t write_cb);
 
-/**
- * @brief         Function for updating the battery level.
- *
- * @param[in]     value   New battery measurement value
- * 
- * @attention     None
- *
- * @return        None
- */
-void ble_bas_battery_level_update(uint8_t value);
-
 #endif // __BLE_BAS_H
 
 /* End of file -------------------------------------------------------- */

@@ -129,10 +129,5 @@ void ble_bos_callback_register(attsReadCback_t read_cb, attsWriteCback_t write_c
   m_bos_group.writeCback = write_cb;
 }
 
-void ble_bos_blood_oxygen_update(uint8_t value)
-{
-  AttsHandleValueNtf(1, BOS_LVL_HDL, 1, &value);
-}
-
 /* Private function definitions --------------------------------------- */
 /* End of file -------------------------------------------------------- */
