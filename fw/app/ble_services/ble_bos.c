@@ -21,7 +21,6 @@
 #define BLE_UUID_BOS_CHARATERISTIC        (0x1235) /**< The part UUID of the Blood Oxygen Charateristic. */
 
 /*! \brief Macro for building BOS UUIDs */
-/*! \brief Base UUID:  E0262760-08C2-11E1-9073-0E8AC72EXXXX */
 #define ATT_UUID_BOS_BUILD(part)           0x41, 0xEE, 0x68, 0x3A, 0x99, 0x0F, 0x0E, 0x72, \
                                            0x85, 0x49, 0x8D, 0xB3, UINT16_TO_BYTES(part),0x00, 0x00
 

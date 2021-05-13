@@ -18,41 +18,37 @@
 
 /* Private defines ---------------------------------------------------- */
 
-/*! Characteristic read permissions */
+// Characteristic read permissions
 #ifndef BATT_SEC_PERMIT_READ
 #define BATT_SEC_PERMIT_READ SVC_SEC_PERMIT_READ
 #endif
 
-/*! Characteristic write permissions */
+// Characteristic write permissions
 #ifndef BATT_SEC_PERMIT_WRITE
 #define BATT_SEC_PERMIT_WRITE SVC_SEC_PERMIT_WRITE
 #endif
 
 /* Private enumerate/structure ---------------------------------------- */
-/*!
- * Battery service
- */
-
-/* Battery service declaration */
+// Battery service declaration
 static const uint8_t m_bas_service[] = {UINT16_TO_BYTES(ATT_UUID_BATTERY_SERVICE)};
 static const uint16_t m_bas_service_len = sizeof(m_bas_service);
 
-/* Battery level characteristic */
+// Battery level characteristic
 static const uint8_t m_bas_charac[] = {ATT_PROP_READ | ATT_PROP_NOTIFY, UINT16_TO_BYTES(BAS_LVL_HDL), UINT16_TO_BYTES(ATT_UUID_BATTERY_LEVEL)};
 static const uint16_t m_bas_charac_len = sizeof(m_bas_charac);
 
-/* Battery level */
+// Battery level
 static uint8_t m_batt_level[] = {0};
 static const uint16_t m_batt_level_len = sizeof(m_batt_level);
 
-/* Battery level client characteristic configuration */
+// Battery level client characteristic configuration
 static uint8_t m_batt_level_cc[] = {UINT16_TO_BYTES(0x0000)};
 static const uint16_t m_batt_level_cc_len = sizeof(m_batt_level_cc);
 
-/* Attribute list for group */
+// Attribute list for group
 static const attsAttr_t m_bas_list[] =
 {
-  /* Service declaration */
+  // Service declaration
   {
     attPrimSvcUuid,
     (uint8_t *) m_bas_service,
@@ -61,7 +57,7 @@ static const attsAttr_t m_bas_list[] =
     0,
     ATTS_PERMIT_READ
   },
-  /* Characteristic declaration */
+  // Characteristic declaration
   {
     attChUuid,
     (uint8_t *) m_bas_charac,
@@ -70,7 +66,7 @@ static const attsAttr_t m_bas_list[] =
     0,
     ATTS_PERMIT_READ
   },
-  /* Characteristic value */
+  // Characteristic value
   {
     attBlChUuid,
     m_batt_level,
@@ -79,7 +75,7 @@ static const attsAttr_t m_bas_list[] =
     ATTS_SET_READ_CBACK,
     BATT_SEC_PERMIT_READ
   },
-  /* Characteristic CCC descriptor */
+  // Characteristic CCC descriptor
   {
     attCliChCfgUuid,
     m_batt_level_cc,
@@ -90,7 +86,7 @@ static const attsAttr_t m_bas_list[] =
   }
 };
 
-/* Battery group structure */
+// Battery group structure
 static attsGroup_t m_bas_group =
 {
   NULL,

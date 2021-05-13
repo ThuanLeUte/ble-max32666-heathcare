@@ -67,13 +67,30 @@ bs_bool_t;
 
 /* Public variables --------------------------------------------------- */
 /* Public function prototypes ----------------------------------------- */
+/**
+ * @brief         Board Support Package Init
+ *
+ * @param[in]     None
+ *
+ * @attention     None
+ *
+ * @return        None
+ */
 void bsp_init(void);
-void bsp_delay(uint32_t ms);
-
-
 
 /**
- * @brief         I2C write
+ * @brief         Delay
+ *
+ * @param[in]     ms    Millisecond
+ *
+ * @attention     None
+ *
+ * @return        None
+ */
+void bsp_delay(uint32_t ms);
+
+/**
+ * @brief         I2C read memory
  *
  * @param[in]     slave_addr   Slave address
  * @param[in]     reg_addr     Register address
@@ -87,6 +104,20 @@ void bsp_delay(uint32_t ms);
  * - BS_ERROR
  */
 base_status_t bsp_i2c_read_mem(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
+
+/**
+ * @brief         I2C read
+ *
+ * @param[in]     slave_addr   Slave address
+ * @param[out]    data         Pointer to data
+ * @param[in]     len          Data length
+ *
+ * @attention     None
+ *
+ * @return
+ * - BS_OK
+ * - BS_ERROR
+ */
 base_status_t bsp_i2c_read(uint8_t slave_addr, uint8_t *data, uint32_t len);
 
 /**

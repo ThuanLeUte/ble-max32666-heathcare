@@ -18,8 +18,8 @@
 #include "att_api.h"
 
 /* Public defines ----------------------------------------------------- */
-#define BAS_START_HDL   0x60               /*!< Service start handle. */
-#define BAS_END_HDL     (BAS_MAX_HDL - 1)  /*!< Service end handle. */
+#define BAS_START_HDL   0x60               // Service start handle
+#define BAS_END_HDL     (BAS_MAX_HDL - 1)  // Service end handle
 
 /* Public enumerate/structure ----------------------------------------- */
 /**
@@ -27,11 +27,11 @@
  */
 enum
 {
-  BAS_SVC_HDL = BAS_START_HDL,         /*!< BAS service declaration */
-  BAS_LVL_CH_HDL,                      /*!< BAS level characteristic */
-  BAS_LVL_HDL,                         /*!< BAS level */
-  BAS_LVL_CH_CCC_HDL,                  /*!< BAS level CCCD */
-  BAS_MAX_HDL                          /*!< Maximum handle. */
+  BAS_SVC_HDL = BAS_START_HDL,         //  BAS service declaration
+  BAS_LVL_CH_HDL,                      //  BAS level characteristic
+  BAS_LVL_HDL,                         //  BAS level
+  BAS_LVL_CH_CCC_HDL,                  //  BAS level CCCD
+  BAS_MAX_HDL                          //  Maximum handle.
 };
 
 /* Public macros ------------------------------------------------------ */

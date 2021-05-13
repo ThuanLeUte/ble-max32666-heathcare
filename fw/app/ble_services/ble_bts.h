@@ -18,8 +18,8 @@
 #include "att_api.h"
 
 /* Public defines ----------------------------------------------------- */
-#define BTS_START_HDL   0x20             /*!< Service start handle. */
-#define BTS_END_HDL     (BTS_MAX_HDL - 1)  /*!< Service end handle. */
+#define BTS_START_HDL   0x20                // Service start handle
+#define BTS_END_HDL     (BTS_MAX_HDL - 1)   // Service end handle
 
 /* Public enumerate/structure ----------------------------------------- */
 /**
@@ -27,11 +27,11 @@
  */
 enum
 {
-  BTS_SVC_HDL = BTS_START_HDL,         /*!< BTS service declaration */
-  BTS_VALUE_CH_HDL,                      /*!< BTS value characteristic */
-  BTS_VALUE_HDL,                         /*!< BTS value */
-  BTS_VALUE_CH_CCC_HDL,                  /*!< BTS value CCCD */
-  BTS_MAX_HDL                          /*!< Maximum handle. */
+  BTS_SVC_HDL = BTS_START_HDL,           // BTS service declaration
+  BTS_VALUE_CH_HDL,                      // BTS value characteristic
+  BTS_VALUE_HDL,                         // BTS value
+  BTS_VALUE_CH_CCC_HDL,                  // BTS value CCCD
+  BTS_MAX_HDL                            // Maximum handle.
 };
 
 /* Public macros ------------------------------------------------------ */
