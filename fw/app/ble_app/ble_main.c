@@ -282,6 +282,7 @@ void ble_start(void)
 
   // Initialize attribute server database
   SvcCoreAddGroup();
+  SvcDisAddGroup();
 
   // User service add
   ble_bts_init();
