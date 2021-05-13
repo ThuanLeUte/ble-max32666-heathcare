@@ -104,9 +104,11 @@ SRCS += ble_main.c
 # BLE services
 SRCS += ble_bos.c
 SRCS += ble_bas.c
+SRCS += ble_bts.c
 
 # BLE services application
 SRCS += bas_app.c
+SRCS += bts_app.c
 
 # Where to find source files for this test
 VPATH  = .

@@ -46,7 +46,9 @@
 #include "ble_main.h"
 #include "ble_bas.h"
 #include "ble_bos.h"
+#include "ble_bts.h"
 #include "bas_app.h"
+#include "bts_app.h"
 #include "stdio.h"
 
 /**************************************************************************************************
@@ -127,6 +129,11 @@ static const bas_app_cfg_t m_ble_bas_cfg =
   3,                          // Battery measurement timer expiration period in seconds
 };
 
+static const bas_app_cfg_t m_ble_bts_cfg =
+{
+  5,                         
+};
+
 // SMP security parameter configuration
 static const smpCfg_t m_ble_smp_cfg =
 {
@@ -184,9 +191,9 @@ static const uint8_t m_ble_scan_data_disc[] =
 enum
 {
   BLE_GATT_SC_CCC_IDX,      // GATT service, service changed characteristic
-  BLE_BATT_LVL_CCC_IDX,     // Battery service, battery level characteristic
   BLE_TEMP_CCC_IDX,         // Temperature service, temperature monitor characteristic
   BLE_SENSOR_HUB_CCC_IDX,   // Sensor hub service, spo2 monitor characteristic
+  BLE_BATT_LVL_CCC_IDX,     // Battery service, battery level characteristic
   BLE_NUM_CCC_IDX
 };
 
@@ -195,9 +202,9 @@ static const attsCccSet_t m_ble_ccc_set[BLE_NUM_CCC_IDX] =
 {
   /* cccd handle          value range               security level */
   {GATT_SC_CH_CCC_HDL,    ATT_CLIENT_CFG_INDICATE,  DM_SEC_LEVEL_NONE},   // BLE_GATT_SC_CCC_IDX
-  {BATT_LVL_CH_CCC_HDL,   ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   // BLE_BATT_LVL_CCC_IDX
-  {HRS_HRM_CH_CCC_HDL,    ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   // BLE_TEMP_CCC_IDX
-  {RSCS_RSM_CH_CCC_HDL,   ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE}    // BLE_SENSOR_HUB_CCC_IDX
+  {BTS_VALUE_CH_CCC_HDL,  ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   // BLE_TEMP_CCC_IDX
+  {BOS_LVL_CH_CCC_HDL,    ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE},   // BLE_SENSOR_HUB_CCC_IDX
+  {BATT_LVL_CH_CCC_HDL,   ATT_CLIENT_CFG_NOTIFY,    DM_SEC_LEVEL_NONE}    // BLE_BATT_LVL_CCC_IDX
 };
 
 /**************************************************************************************************
@@ -239,10 +246,9 @@ void ble_handler_init(wsfHandlerId_t handler_id)
   // Set stack configuration pointers
   pSmpCfg = (smpCfg_t *) &m_ble_smp_cfg;
 
-  // TODO: Add ble init
-
-  // Initialize battery service application
+  // Initialize user service application
   bas_app_init(handler_id, (bas_app_cfg_t *) &m_ble_bas_cfg);
+  bts_app_init(handler_id, (bts_app_cfg_t *) &m_ble_bts_cfg);
 }
 
 void ble_handler(wsfEventMask_t event, wsfMsgHdr_t *p_msg)
@@ -278,11 +284,10 @@ void ble_start(void)
   SvcCoreAddGroup();
 
   // User service add
-  ble_bos_init();
-  // SvcHrsAddGroup();
-  // ble_bas_callback_register(bas_app_read_cb, NULL);
-  // ble_bas_init();
-  SvcBattAddGroup();
+  ble_bts_init();
+
+  // ble_bos_init();
+  ble_bas_init();
 
   // Reset the device
   DmDevReset();
@@ -402,8 +407,8 @@ static void m_ble_ccc_cb(attsCccEvt_t *p_evt)
  */
 static void m_ble_close(ble_msg_t *p_msg)
 {
-  // Stop heart rate measurement
-  HrpsMeasStop((dmConnId_t) p_msg->hdr.param);
+  // Stop temperature measurement
+  bts_app_measure_stop((dmConnId_t) p_msg->hdr.param);
 
   // Stop battery measurement
   bas_app_measure_stop((dmConnId_t) p_msg->hdr.param);
@@ -461,6 +466,22 @@ static void m_ble_process_ccc_state(ble_msg_t *p_msg)
     }
     return;
   }
+
+  // Handle temperature CCC
+  if (p_msg->ccc.idx == BLE_TEMP_CCC_IDX)
+  {
+    if (p_msg->ccc.value == ATT_CLIENT_CFG_NOTIFY)
+    {
+      bts_app_measure_start((dmConnId_t) p_msg->ccc.hdr.param, BLE_TEMPERARUE_TIMER_IND, BLE_TEMP_CCC_IDX);
+      printf("bts_app_measure_start\n");
+    }
+    else
+    {
+      bts_app_measure_stop((dmConnId_t) p_msg->ccc.hdr.param);
+      printf("bts_app_measure_stop\n");
+    }
+    return;
+  }
 }
 
 /**
@@ -486,6 +507,7 @@ static void m_ble_process_msg(ble_msg_t *p_msg)
 
     case BLE_TEMPERARUE_TIMER_IND:
       printf("BLE_TEMPERARUE_TIMER_IND\n");
+      bts_app_process_msg(&p_msg->hdr);
       break;
 
     case BLE_BATT_TIMER_IND:
@@ -493,8 +515,8 @@ static void m_ble_process_msg(ble_msg_t *p_msg)
       break;
 
     case ATTS_HANDLE_VALUE_CNF:
-      HrpsProcMsg(&p_msg->hdr);
       bas_app_process_msg(&p_msg->hdr);
+      bts_app_process_msg(&p_msg->hdr);
       break;
 
     case ATTS_CCC_STATE_IND:
@@ -522,6 +544,7 @@ static void m_ble_process_msg(ble_msg_t *p_msg)
     case DM_CONN_OPEN_IND:
       printf("DM_CONN_OPEN_IND\n");
       bas_app_process_msg(&p_msg->hdr);
+      bts_app_process_msg(&p_msg->hdr);
       uiEvent = APP_UI_CONN_OPEN;
       break;
 

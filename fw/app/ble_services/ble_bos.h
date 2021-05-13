@@ -18,7 +18,7 @@
 #include "att_api.h"
 
 /* Public defines ----------------------------------------------------- */
-#define BOS_START_HDL   0x20               /*!< Service start handle. */
+#define BOS_START_HDL   0x25               /*!< Service start handle. */
 #define BOS_END_HDL     (BOS_MAX_HDL - 1)  /*!< Service end handle. */
 
 /* Public enumerate/structure ----------------------------------------- */

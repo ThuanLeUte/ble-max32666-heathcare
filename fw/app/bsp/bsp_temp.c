@@ -71,7 +71,7 @@ base_status_t bsp_temp_get(float *temp)
   }
   else
   {
-    printf("Temperature is not READY");
+    printf("Temperature is not READY\n");
   }
 
   return BS_ERROR;
