@@ -10,6 +10,7 @@
         "fit_api.h": "c",
         "svc_batt.h": "c",
         "bas_api.h": "c",
-        "bas_app.h": "c"
+        "bas_app.h": "c",
+        "wsf_types.h": "c"
     }
 }
