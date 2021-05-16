@@ -51,7 +51,7 @@ static const uint8_t m_bts_charac[] = {ATT_PROP_READ | ATT_PROP_NOTIFY, UINT16_T
 static const uint16_t m_bts_charac_len = sizeof(m_bts_charac);
 
 // Body temperature
-static uint8_t m_temp[] = {0};
+static uint8_t m_temp[4] = {0, 0, 0, 0};
 static const uint16_t m_temp_len = sizeof(m_temp);
 
 // Body temperature client characteristic configuration

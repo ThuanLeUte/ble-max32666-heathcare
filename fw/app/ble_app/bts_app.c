@@ -37,7 +37,7 @@ typedef struct
 {
   dmConnId_t      conn_id;          // Connection ID
   bool_t          temp_to_send;     // Body Temperature measurement ready to be sent on this channel
-  uint8_t         sent_temp_value;  // Value of last sent temperature value
+  float           sent_temp_value;  // Value of last sent temperature value
 }
 bts_app_conn_t;
 
@@ -49,7 +49,7 @@ static struct
   bts_app_cfg_t   cfg;                // Configurable parameters
   uint16_t        curr_count;         // Current measurement period count
   bool_t          tx_ready;           // True if ready to send notifications
-  uint8_t         temp_value;         // Value of last measured temperature value
+  float           temp_value;         // Value of last measured temperature value
 }
 bts_cb;
 
@@ -61,7 +61,7 @@ static void m_bts_setup_to_send(void);
 static void m_bts_send_periodic_temp_value(bts_app_conn_t *p_conn);
 static void m_bts_conn_open(dmEvt_t *p_msg);
 static void m_bts_handle_value_confirm(attEvt_t *p_msg);
-static void bts_app_send_temp_value(dmConnId_t conn_id, uint8_t idx, uint8_t value);
+static void bts_app_send_temp_value(dmConnId_t conn_id, uint8_t idx, float value);
 static bool_t m_bts_no_conn_active(void);
 static bts_app_conn_t *m_bts_find_next_to_send(uint8_t ccc_idx);
 
@@ -145,7 +145,6 @@ uint8_t bts_app_read_cb(dmConnId_t conn_id, uint16_t handle, uint8_t operation,
 static void m_bts_meas_time_exp(wsfMsgHdr_t *p_msg)
 {
   bts_app_conn_t  *p_conn;
-  float temp;
 
   // If there are active connections
   if (m_bts_no_conn_active() == FALSE)
@@ -155,11 +154,10 @@ static void m_bts_meas_time_exp(wsfMsgHdr_t *p_msg)
     // Set up temperature measurement to be sent on all connections
     m_bts_setup_to_send();
 
-    // // Read temperature measurement sensor data
-    bsp_temp_get(&temp);
-    bts_cb.temp_value = (uint8_t)temp;
+    // Read temperature measurement sensor data
+    bsp_temp_get(&bts_cb.temp_value);
 
-    printf("Temmperature: %f , %d \n", (double)temp, bts_cb.temp_value);
+    printf("Temmperature: %f \n", bts_cb.temp_value);
 
     // If ready to send measurements
     if (bts_cb.tx_ready)
@@ -189,14 +187,14 @@ static void m_bts_meas_time_exp(wsfMsgHdr_t *p_msg)
  *
  * @return        None
  */
-static void bts_app_send_temp_value(dmConnId_t conn_id, uint8_t idx, uint8_t value)
+static void bts_app_send_temp_value(dmConnId_t conn_id, uint8_t idx, float value)
 {
   printf("bts_app_send_temp_value\n", conn_id);
 
   if (AttsCccEnabled(conn_id, idx))
   {
     printf("conn_id: %d\n", conn_id);
-    AttsHandleValueNtf(conn_id, BTS_VALUE_HDL, 1, &value);
+    AttsHandleValueNtf(conn_id, BTS_VALUE_HDL, 4,(uint8_t *) &value);
   }
 }
 
