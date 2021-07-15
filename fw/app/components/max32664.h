@@ -28,9 +28,10 @@ extern "C" {
 #define ENABLE                 0x01
 #define MODE_ONE               0x01
 #define MODE_TWO               0x02
+
 #define SET_FORMAT             0x00
-#define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
-#define WRITE_SET_THRESHOLD    0x01 //Index Byte for WRITE_INPUT(0x14)
+#define WRITE_SET_THRESHOLD    0x01
+#define SET_SAMPLE_REPORT_RATE 0x02
 #define WRITE_EXTERNAL_TO_FIFO 0x00
 
 /* Public enumerate/structure ----------------------------------------- */
@@ -68,6 +69,8 @@ typedef struct
   base_status_t (*i2c_write) (uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len);
 
   void (*delay) (uint32_t ms);
+
+  void (*gpio_write) (uint8_t pin, uint8_t state);
 }
 max32664_t;
 
@@ -188,11 +191,12 @@ base_status_t max32664_init(max32664_t *me);
 base_status_t max32664_read_bpm(max32664_t *me);
 base_status_t max32664_config_bpm(max32664_t *me, max32664_mode_t mode);
 
-base_status_t max32664_fast_algo_control(max32664_t *me, max32664_mode_t mode);
 base_status_t max32664_set_output_mode(max32664_t *me, max32664_output_mode_t output_type);
 base_status_t max32664_set_fifo_threshold(max32664_t *me, uint8_t threshold);
-base_status_t max32664_agc_algo_control(max32664_t *me, bool enable);
-base_status_t max32664_enable_max86140(max32664_t *me, bool sen_switch);
+base_status_t max32664_set_report_rate(max32664_t *me, uint8_t report_rate);
+base_status_t max32664_algo_config(max32664_t *me);
+base_status_t max32664_enable_algo(max32664_t *me);
+base_status_t max32664_read_bootloader_ver(max32664_t *me);
 
 base_status_t max32664_read_status(max32664_t *me, uint8_t *status);
 

@@ -37,7 +37,7 @@
 
 /* Private defines ---------------------------------------------------- */
 #define WSF_BUF_SIZE      (0x1048)
-#define WSF_BUF_POOLS 	  (6)
+#define WSF_BUF_POOLS     (6)
 
 /* Private enumerate/structure ---------------------------------------- */
 /* Private macros ----------------------------------------------------- */
@@ -59,7 +59,6 @@ static wsfBufPoolDesc_t mainPoolDesc[WSF_BUF_POOLS] =
 
 /* Private function prototypes ---------------------------------------- */
 /* Function definitions ----------------------------------------------- */
-
 // Stack initialization for app
 extern void ble_stack_init(void);
 
@@ -159,28 +158,28 @@ int main(void)
   printf("Setup Complete\n");
 
   bsp_init();
-  bsp_temp_init();
+  // bsp_temp_init();
 
-  // bsp_sh_init();
-  // uint8_t spo2 = 0;
-  // uint8_t heart_rate = 0;
-
-  // while (1)
-  // {
-  //     float temp = 0;
-  //     bsp_temp_get(&temp);
-  //     printf("Temmperature: %f \n", (double)temp);
-
-  //     // bsp_sh_get_sensor_value(&spo2, &heart_rate);
-  //     // printf("Spo2: %d \n", (uint8_t)spo2);
-  //     // printf("Heart rate: %d \n", (uint8_t)heart_rate);
-
-  //     bsp_delay(1000);
-  // }
+  bsp_sh_init();
+  uint8_t spo2 = 0;
+  uint8_t heart_rate = 0;
 
   while (1)
   {
-    wsfOsDispatcher();
+    // float temp = 0;
+    // bsp_temp_get(&temp);
+    // printf("Temmperature: %f \n", (double)temp);
+
+    bsp_sh_get_sensor_value(&spo2, &heart_rate);
+    printf("Spo2: %d \n", (uint8_t)spo2);
+    printf("Heart rate: %d \n", (uint8_t)heart_rate);
+
+    bsp_delay(1000);
+  }
+
+  while (1)
+  {
+    // wsfOsDispatcher();
   }
 }
 

@@ -22,27 +22,24 @@
 /* Private macros ----------------------------------------------------- */
 /* Public variables --------------------------------------------------- */
 /* Private variables -------------------------------------------------- */
+static gpio_cfg_t m_gpio_reset_out = {PORT_1, PIN_12, GPIO_FUNC_OUT, GPIO_PAD_NONE};
+static gpio_cfg_t m_gpio_mfio_out = {PORT_1, PIN_7, GPIO_FUNC_OUT, GPIO_PAD_NONE};
+
 /* Private function prototypes ---------------------------------------- */
 static void bsp_i2c_init(void);
+static void bsp_gpio_init(void);
 void I2C0_IRQHandler(void);
 
 /* Function definitions ----------------------------------------------- */
 void bsp_init(void)
 {
   bsp_i2c_init();
-}
-
-static void bsp_i2c_init(void)
-{
-  //Setup the I2CM
-  I2C_Shutdown(I2C_MASTER);
-  I2C_Init(I2C_MASTER, I2C_FAST_MODE, NULL);
-  NVIC_EnableIRQ(I2C0_IRQn);
+  bsp_gpio_init();
 }
 
 void bsp_delay(uint32_t ms)
 {
-  TMR_Delay(MXC_TMR0, MSEC(ms), 0);;
+  TMR_Delay(MXC_TMR0, MSEC(ms), 0);
 }
 
 base_status_t bsp_i2c_write(uint8_t slave_addr, uint8_t reg_addr, uint8_t *data, uint32_t len)
@@ -106,11 +103,43 @@ base_status_t bsp_i2c_read_mem(uint8_t slave_addr, uint8_t reg_addr, uint8_t *da
   return BS_OK;
 }
 
-/* Private function definitions --------------------------------------- */
+void bsp_gpio_write(uint8_t pin, uint8_t state)
+{
+  if (pin == MAX32644_PIN_RESET)
+  {
+    if (state)
+      GPIO_OutSet(&m_gpio_reset_out);
+    else
+      GPIO_OutClr(&m_gpio_reset_out);
+  }
+  else if (pin == MAX32644_PIN_MIFO)
+  {
+    if (state)
+      GPIO_OutSet(&m_gpio_mfio_out);
+    else
+      GPIO_OutClr(&m_gpio_mfio_out);
+  }
+}
+
 void I2C0_IRQHandler(void)
 {
   I2C_Handler(I2C_MASTER);
   return;
+}
+
+/* Private function definitions --------------------------------------- */
+static void bsp_i2c_init(void)
+{
+  //Setup the I2CM
+  I2C_Shutdown(I2C_MASTER);
+  I2C_Init(I2C_MASTER, I2C_FAST_MODE, NULL);
+  NVIC_EnableIRQ(I2C0_IRQn);
+}
+
+static void bsp_gpio_init(void)
+{
+  GPIO_Config(&m_gpio_reset_out);
+  GPIO_Config(&m_gpio_mfio_out);
 }
 
 /* End of file -------------------------------------------------------- */

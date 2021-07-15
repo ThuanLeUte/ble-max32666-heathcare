@@ -29,6 +29,7 @@ base_status_t bsp_sh_init(void)
   m_max32664.i2c_read       = bsp_i2c_read;
   m_max32664.i2c_write      = bsp_i2c_write;
   m_max32664.delay          = bsp_delay;
+  m_max32664.gpio_write     = bsp_gpio_write;
 
   max32664_init(&m_max32664);
 
