@@ -44,3 +44,12 @@ References:
 [3] MAXM86146 Datasheet: https://datasheets.maximintegrated.com/en/ds/MAXM86146.pdf
 [4] MAX32664 Datasheet: https://datasheets.maximintegrated.com/en/ds/MAX32664.pdf
 [5] https://datasheets.maximintegrated.com/en/ds/MAX30208.pdf
+
+
+# Pin connect
+
+Sensor board  | MAX32666FTH REV A
+## RESET         |     IO0
+## MFIO          |     IO1
+## SCL           |     SCL
+## SDA           |     SDA
