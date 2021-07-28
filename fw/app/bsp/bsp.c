@@ -22,8 +22,8 @@
 /* Private macros ----------------------------------------------------- */
 /* Public variables --------------------------------------------------- */
 /* Private variables -------------------------------------------------- */
-static gpio_cfg_t m_gpio_reset_out = {PORT_1, PIN_12, GPIO_FUNC_OUT, GPIO_PAD_NONE};
-static gpio_cfg_t m_gpio_mfio_out = {PORT_1, PIN_7, GPIO_FUNC_OUT, GPIO_PAD_NONE};
+static gpio_cfg_t m_gpio_reset_out = {PORT_0, PIN_0, GPIO_FUNC_OUT, GPIO_PAD_NONE};
+static gpio_cfg_t m_gpio_mfio_out  = {PORT_0, PIN_1, GPIO_FUNC_OUT, GPIO_PAD_NONE};
 
 /* Private function prototypes ---------------------------------------- */
 static void bsp_i2c_init(void);
